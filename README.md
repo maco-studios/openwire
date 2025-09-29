@@ -2,9 +2,11 @@
   <img src=".github/assets/img/logo.svg" alt="OpenWire Logo" width="200"/>
 </p>
 
-# OpenWire
+> [!WARNING]
+> This project is currently in early development. The API and features are subject to change.
+> Please provide feedback and contributions to help shape its future.
 
-OpenWire is a Magento 1 module that introduces a modern component-based architecture to the Magento ecosystem. It enables developers to create dynamic, interactive, and reusable components with minimal JavaScript knowledge. This project draws heavy inspiration from the Magento 2 Magewire and Laravel Livewire projects, adapting their concepts to the Magento 1 platform.
+is a Magento 1 module that introduces a modern component-based architecture to the Magento ecosystem. It enables developers to create dynamic, interactive, and reusable components with minimal JavaScript knowledge. This project draws heavy inspiration from the Magento 2 Magewire and Laravel Livewire projects, adapting their concepts to the Magento 1 platform.
 
 ## Installation
 
