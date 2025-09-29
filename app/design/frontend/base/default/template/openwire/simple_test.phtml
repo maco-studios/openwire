@@ -1,0 +1,28 @@
+<div ow class="simple-test">
+    <h3>Simple Test Component</h3>
+    <p><strong>Status:</strong> <?php echo htmlspecialchars($this->getData('message') ?: 'No message') ?></p>
+    
+    <div class="test-info">
+        <p>This component tests basic functionality without complex array operations.</p>
+        <p>Items count: <?php echo count($this->getData('items') ?: []) ?></p>
+    </div>
+</div>
+
+<style>
+.simple-test {
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.test-info {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+</style>

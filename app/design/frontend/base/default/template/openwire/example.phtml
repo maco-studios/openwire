@@ -1,0 +1,17 @@
+<div ow>
+    <h3 :title="Example Component"><?php echo $this->getTitle() ?></h3>
+    <p :message="Hello from Openwire!"><?php echo $this->getMessage() ?></p>
+
+    <div>
+        <button @click="decrement">-</button>
+        <span :count="0"><?php echo $this->getCount() ?></span>
+        <button @click="increment">+</button>
+    </div>
+
+    <div>
+        <input type="text" @input="message" placeholder="Enter new message" />
+        <button @click="updateMessage">Update Message</button>
+    </div>
+
+    <div #loading style="display:none;">Loading...</div>
+</div>

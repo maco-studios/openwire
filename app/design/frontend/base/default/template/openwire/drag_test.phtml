@@ -1,0 +1,171 @@
+<div ow class="drag-test">
+    <h3>Drag & Drop Test</h3>
+    <p>This page tests the basic drag and drop functionality.</p>
+
+    <div class="test-section">
+        <h4>Simple Drag Test</h4>
+        <div class="drag-items">
+            <div class="drag-item" @drag="onDragStart" data-id="item1">
+                Drag Item 1
+            </div>
+            <div class="drag-item" @drag="onDragStart" data-id="item2">
+                Drag Item 2
+            </div>
+            <div class="drag-item" @drag="onDragStart" data-id="item3">
+                Drag Item 3
+            </div>
+        </div>
+
+        <div class="drop-zone" @drop="onDrop">
+            Drop Zone - Drop items here
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h4>Sortable List Test</h4>
+        <ul class="sortable-list" @sortable="reorderItems">
+            <li class="sortable-item" data-sortable-item data-id="sortable-1">Item 1</li>
+            <li class="sortable-item" data-sortable-item data-id="sortable-2">Item 2</li>
+            <li class="sortable-item" data-sortable-item data-id="sortable-3">Item 3</li>
+            <li class="sortable-item" data-sortable-item data-id="sortable-4">Item 4</li>
+        </ul>
+    </div>
+
+    <div class="debug-info">
+        <h4>Debug Information</h4>
+        <div id="drag-debug">
+            <p>Drag events will be logged here...</p>
+        </div>
+    </div>
+
+    <div #loading style="display:none;">Processing...</div>
+</div>
+
+<style>
+.drag-test {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.test-section {
+    margin: 30px 0;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background: #f9f9f9;
+}
+
+.drag-items {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.drag-item {
+    padding: 15px 20px;
+    background: #2196F3;
+    color: white;
+    border-radius: 6px;
+    cursor: move;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.drag-item:hover {
+    background: #1976d2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.drop-zone {
+    padding: 40px;
+    border: 2px dashed #ccc;
+    border-radius: 6px;
+    text-align: center;
+    background: #f5f5f5;
+    transition: all 0.2s ease;
+}
+
+.drop-zone:hover {
+    border-color: #2196F3;
+    background: #e3f2fd;
+}
+
+.sortable-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sortable-item {
+    padding: 12px 16px;
+    margin: 5px 0;
+    background: #4CAF50;
+    color: white;
+    border-radius: 4px;
+    cursor: move;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.sortable-item:hover {
+    background: #45a049;
+    transform: translateX(5px);
+}
+
+.debug-info {
+    margin-top: 30px;
+    padding: 15px;
+    background: #f0f0f0;
+    border-radius: 6px;
+    border-left: 4px solid #FF9800;
+}
+
+#drag-debug {
+    font-family: monospace;
+    font-size: 12px;
+    background: white;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    max-height: 200px;
+    overflow-y: auto;
+}
+</style>
+
+<script>
+// Add debug logging for drag events
+document.addEventListener('DOMContentLoaded', function() {
+    const debugDiv = document.getElementById('drag-debug');
+
+    function log(message) {
+        const timestamp = new Date().toLocaleTimeString();
+        debugDiv.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+        debugDiv.scrollTop = debugDiv.scrollHeight;
+    }
+
+    // Log all drag events
+    document.addEventListener('dragstart', function(e) {
+        log(`Drag started: ${e.target.textContent || e.target.id}`);
+    });
+
+    document.addEventListener('dragend', function(e) {
+        log(`Drag ended: ${e.target.textContent || e.target.id}`);
+    });
+
+    document.addEventListener('dragover', function(e) {
+        e.preventDefault();
+    });
+
+    document.addEventListener('drop', function(e) {
+        e.preventDefault();
+        log(`Drop event on: ${e.target.textContent || e.target.className}`);
+    });
+
+    log('Drag test page loaded - try dragging the items above');
+});
+</script>

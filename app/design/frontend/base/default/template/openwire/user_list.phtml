@@ -1,0 +1,240 @@
+<div ow class="user-list-container">
+    <div class="list-header">
+        <h2>User List (<?php echo $this->getUserCount() ?> users)</h2>
+
+        <div class="controls">
+            <label>
+                <input type="checkbox" #model="showOnlineOnly" />
+                Show online only
+            </label>
+
+            <button @click="toggleOnlineFilter" class="btn btn-primary">
+                Toggle Filter
+            </button>
+        </div>
+    </div>
+
+    <div class="add-user-section">
+        <h3>Add New User</h3>
+        <div class="add-form">
+            <input type="text" placeholder="Name" id="newUserName" />
+            <input type="email" placeholder="Email" id="newUserEmail" />
+            <button @click="addUser" class="btn btn-success">
+                Add User
+            </button>
+        </div>
+    </div>
+
+    <div class="users-grid">
+        <?php foreach ($this->getFilteredUsers() ?: [] as $user): ?>
+            <div class="user-card" data-user-id="<?php echo $user['id'] ?>">
+                <div class="user-info">
+                    <h4><?php echo htmlspecialchars($user['name']) ?></h4>
+                    <p><?php echo htmlspecialchars($user['email']) ?></p>
+                    <span class="status <?php echo $user['online'] ? 'online' : 'offline' ?>">
+                        <?php echo $user['online'] ? 'Online' : 'Offline' ?>
+                    </span>
+                </div>
+
+                <div class="user-actions">
+                    <button @click="selectUser" class="btn btn-info btn-sm">
+                        Select
+                    </button>
+                    <button @click="removeUser" class="btn btn-danger btn-sm">
+                        Remove
+                    </button>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+
+    <?php if ($this->getSelectedUser()): ?>
+        <div class="selected-user">
+            <h3>Selected User</h3>
+            <div class="selected-info">
+                <p><strong>Name:</strong> <?php echo htmlspecialchars($this->getSelectedUser()['name']) ?></p>
+                <p><strong>Email:</strong> <?php echo htmlspecialchars($this->getSelectedUser()['email']) ?></p>
+                <p><strong>Status:</strong> <?php echo $this->getSelectedUser()['online'] ? 'Online' : 'Offline' ?></p>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <div #loading class="loading" style="display: none;">
+        Updating user list...
+    </div>
+</div>
+
+<style>
+.user-list-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f9f9f9;
+}
+
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #eee;
+}
+
+.list-header h2 {
+    margin: 0;
+    color: #333;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.controls label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: bold;
+}
+
+.add-user-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+.add-user-section h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+}
+
+.add-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.add-form input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    flex: 1;
+}
+
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.user-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 15px;
+    transition: box-shadow 0.2s;
+}
+
+.user-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.user-info h4 {
+    margin: 0 0 8px 0;
+    color: #333;
+}
+
+.user-info p {
+    margin: 0 0 8px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.status {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status.online {
+    background: #4CAF50;
+    color: white;
+}
+
+.status.offline {
+    background: #f44336;
+    color: white;
+}
+
+.user-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-info {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.selected-user {
+    background: #e3f2fd;
+    border: 1px solid #2196f3;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.selected-user h3 {
+    margin: 0 0 10px 0;
+    color: #1976d2;
+}
+
+.selected-info p {
+    margin: 5px 0;
+    color: #333;
+}
+
+.loading {
+    color: #007bff;
+    font-style: italic;
+    text-align: center;
+    padding: 10px;
+}
+</style>

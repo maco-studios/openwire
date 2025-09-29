@@ -1,0 +1,279 @@
+<div ow class="product-card">
+    <div class="product-image">
+        <img src="<?php echo $this->getData('productImage') ?: '/skin/frontend/base/default/images/placeholder.jpg' ?>"
+             alt="<?php echo htmlspecialchars($this->getData('productName') ?: '') ?>" />
+
+        <div class="product-actions-overlay">
+            <button @click="togglePriceVisibility" class="btn btn-icon" title="Toggle Price">
+                <span class="icon">💰</span>
+            </button>
+            <button @click="addToWishlist" class="btn btn-icon <?php echo $this->getWishlistButtonClass() ?>"
+                    title="<?php echo $this->getWishlistButtonText() ?>">
+                <span class="icon">❤️</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="product-info">
+        <h3 class="product-name">
+            <a href="<?php echo $this->getData('productUrl') ?>" target="_blank">
+                <?php echo htmlspecialchars($this->getData('productName') ?: '') ?>
+            </a>
+        </h3>
+
+        <?php if ($this->getData('showPrice')): ?>
+            <div class="product-price">
+                <span class="price"><?php echo $this->getFormattedPrice() ?></span>
+            </div>
+        <?php endif; ?>
+
+        <div class="product-controls">
+            <div class="quantity-control">
+                <label>Quantity:</label>
+                <input type="number" #model="quantity" min="1" max="10" class="quantity-input" />
+                <button @click="updateQuantity" class="btn btn-sm btn-secondary">
+                    Update
+                </button>
+            </div>
+
+            <div class="visibility-controls">
+                <label>
+                    <input type="checkbox" #model="showPrice" />
+                    Show Price
+                </label>
+                <label>
+                    <input type="checkbox" #model="showAddToCart" />
+                    Show Add to Cart
+                </label>
+            </div>
+        </div>
+
+        <?php if ($this->getData('showAddToCart')): ?>
+            <div class="add-to-cart-section">
+                <button class="btn btn-primary btn-add-to-cart">
+                    Add to Cart (<?php echo $this->getData('quantity') ?>)
+                </button>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- Magento Block Integration Example -->
+    <div class="magento-block-content">
+        <h4>Magento Block Content:</h4>
+        <?php
+        // This demonstrates calling getChildHtml() from within a component
+        echo $this->getChildHtml('product_reviews');
+        ?>
+
+        <!-- Example of nested Openwire component -->
+        <div class="nested-component">
+            <h4>User Profile (Nested Component):</h4>
+            <?php
+            // Create and render a nested component using helper
+            $helper = Mage::helper('openwire/component');
+            echo $helper->renderNestedComponent('openwire/component_userProfile', [
+                'userId' => 1,
+                'userName' => 'Product Reviewer',
+                'userEmail' => 'reviewer@example.com',
+                'isOnline' => true
+            ]);
+            ?>
+        </div>
+    </div>
+
+    <div #loading class="loading" style="display: none;">
+        Updating product...
+    </div>
+</div>
+
+<style>
+.product-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    max-width: 400px;
+}
+
+.product-image {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.product-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.product-actions-overlay {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 5px;
+}
+
+.btn-icon {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.9);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.btn-icon:hover {
+    background: white;
+    transform: scale(1.1);
+}
+
+.btn-icon.wishlisted {
+    background: #ff6b6b;
+    color: white;
+}
+
+.product-info h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.product-info h3 a {
+    color: #333;
+    text-decoration: none;
+}
+
+.product-info h3 a:hover {
+    color: #007bff;
+}
+
+.product-price {
+    margin-bottom: 15px;
+}
+
+.price {
+    font-size: 18px;
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+.product-controls {
+    margin-bottom: 15px;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.quantity-control label {
+    font-weight: bold;
+    min-width: 70px;
+}
+
+.quantity-input {
+    width: 60px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.visibility-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.visibility-controls label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+}
+
+.add-to-cart-section {
+    margin-top: 15px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-add-to-cart {
+    width: 100%;
+    background: #28a745;
+    color: white;
+    font-size: 16px;
+}
+
+.btn-add-to-cart:hover {
+    background: #218838;
+}
+
+.magento-block-content {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.magento-block-content h4 {
+    margin: 0 0 10px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.nested-component {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+.nested-component h4 {
+    margin: 0 0 10px 0;
+    color: #495057;
+    font-size: 14px;
+}
+
+.loading {
+    color: #007bff;
+    font-style: italic;
+    text-align: center;
+    padding: 10px;
+}
+
+.icon {
+    font-size: 16px;
+}
+</style>

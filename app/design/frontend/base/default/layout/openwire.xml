@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+    <!-- Include the Openwire runtime in the page head so components autocreate via data-openwire-id -->
+    <default>
+        <reference name="head">
+            <!-- expects skin path: skin/frontend/<package>/<theme>/openwire/js/openwire.js -->
+            <action method="addItem">
+                <type>skin_js</type>
+                <name>openwire/js/openwire.js</name>
+            </action>
+        </reference>
+    </default>
+</layout>

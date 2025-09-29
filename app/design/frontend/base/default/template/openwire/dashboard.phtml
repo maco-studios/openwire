@@ -1,0 +1,252 @@
+<div ow class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Openwire Dashboard</h1>
+        <p>Demonstrating nested components and Magento block integration</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Counter Component -->
+        <div class="dashboard-widget">
+            <h3>Counter Widget</h3>
+            <?php
+            $helper = Mage::helper('openwire/component');
+            echo $helper->renderNestedComponent('openwire/component_counter', [
+                'initialCount' => 10,
+                'name' => 'Dashboard Counter'
+            ]);
+            ?>
+        </div>
+
+        <!-- User List Component -->
+        <div class="dashboard-widget">
+            <h3>User Management</h3>
+            <?php
+            echo $helper->renderNestedComponent('openwire/component_userList', [
+                'users' => [
+                    ['id' => 1, 'name' => 'Admin User', 'email' => 'admin@example.com', 'online' => true],
+                    ['id' => 2, 'name' => 'Test User', 'email' => 'test@example.com', 'online' => false],
+                ]
+            ]);
+            ?>
+        </div>
+
+        <!-- Product Card Component -->
+        <div class="dashboard-widget">
+            <h3>Product Showcase</h3>
+            <?php
+            echo $helper->renderNestedComponent('openwire/component_productCard', [
+                'productId' => 1,
+                'showPrice' => true,
+                'showAddToCart' => true,
+                'quantity' => 2
+            ]);
+            ?>
+        </div>
+
+        <!-- Multiple Nested Components Example -->
+        <div class="dashboard-widget">
+            <h3>Multiple User Profiles</h3>
+            <div class="nested-profiles">
+                <?php
+                $helper = Mage::helper('openwire/component');
+                $profiles = [
+                    ['alias' => 'openwire/component_userProfile', 'params' => [
+                        'userId' => 1, 'userName' => 'John Doe', 'userEmail' => 'john@example.com', 'isOnline' => true
+                    ]],
+                    ['alias' => 'openwire/component_userProfile', 'params' => [
+                        'userId' => 2, 'userName' => 'Jane Smith', 'userEmail' => 'jane@example.com', 'isOnline' => false
+                    ]],
+                    ['alias' => 'openwire/component_userProfile', 'params' => [
+                        'userId' => 3, 'userName' => 'Bob Johnson', 'userEmail' => 'bob@example.com', 'isOnline' => true
+                    ]]
+                ];
+                echo $helper->renderMultipleComponents($profiles);
+                ?>
+            </div>
+        </div>
+
+        <!-- Magento Block Integration Example -->
+        <div class="dashboard-widget">
+            <h3>Magento Block Integration</h3>
+            <div class="block-content">
+                <?php
+                // Create a Magento block
+                $block = Mage::app()->getLayout()->createBlock('core/template');
+                $block->setTemplate('openwire/block_example.phtml');
+
+                // Set some data
+                $block->setData('title', 'Magento Block Example');
+                $block->setData('content', 'This content comes from a Magento block template.');
+
+                // Render the block
+                echo $block->toHtml();
+                ?>
+            </div>
+        </div>
+
+        <!-- Helper Usage Example -->
+        <div class="dashboard-widget">
+            <h3>Component Helper Usage</h3>
+            <div class="helper-example">
+                <?php
+                // Render using helper
+                echo $helper->renderNestedComponent('openwire/component_counter', [
+                    'initialCount' => 5,
+                    'name' => 'Helper Counter'
+                ]);
+                ?>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-footer">
+        <h3>Available Components</h3>
+        <div class="component-list">
+            <?php
+            $helper = Mage::helper('openwire/component');
+            $availableComponents = $helper->getAvailableComponents();
+
+            foreach ($availableComponents as $alias => $description): ?>
+                <div class="component-item">
+                    <strong><?php echo htmlspecialchars($alias) ?></strong>
+                    <span><?php echo htmlspecialchars($description) ?></span>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <div #loading class="loading" style="display: none;">
+        Updating dashboard...
+    </div>
+</div>
+
+<style>
+.dashboard-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #f5f5f5;
+    border-radius: 8px;
+}
+
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #ddd;
+}
+
+.dashboard-header h1 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 2.5em;
+}
+
+.dashboard-header p {
+    margin: 0;
+    color: #666;
+    font-size: 1.1em;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.dashboard-widget {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dashboard-widget h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.nested-profiles {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.block-content {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+.helper-example {
+    padding: 15px;
+    background: #e3f2fd;
+    border-radius: 6px;
+    border: 1px solid #2196f3;
+}
+
+.dashboard-footer {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.dashboard-footer h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+}
+
+.component-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 10px;
+}
+
+.component-item {
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.component-item strong {
+    display: block;
+    color: #007bff;
+    font-family: monospace;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.component-item span {
+    color: #666;
+    font-size: 14px;
+}
+
+.loading {
+    color: #007bff;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .component-list {
+        grid-template-columns: 1fr;
+    }
+}
+</style>

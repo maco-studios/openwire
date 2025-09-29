@@ -1,0 +1,346 @@
+<div ow class="kanban-board">
+    <div class="board-header">
+        <h2>Kanban Board</h2>
+        <div class="board-stats">
+            <span class="stat">Total Cards: <?php echo $this->getTotalCards() ?></span>
+        </div>
+    </div>
+
+    <!-- Add New Card Form -->
+    <div class="add-card-form">
+        <h3>Add New Card</h3>
+        <div class="form-row">
+            <input type="text"
+                   placeholder="Card title..."
+                   #model="newCardTitle"
+                   class="card-input" />
+            <input type="text"
+                   placeholder="Card content..."
+                   #model="newCardContent"
+                   class="card-input" />
+            <select #model="newCardColumn" class="column-select">
+                <?php
+                $columnOptions = $this->getColumnOptions() ?: [];
+                foreach ($columnOptions as $id => $title):
+                ?>
+                    <option value="<?php echo htmlspecialchars($id) ?>"><?php echo htmlspecialchars($title) ?></option>
+                <?php endforeach; ?>
+            </select>
+            <button @click="addCard" class="btn btn-primary">
+                Add Card
+            </button>
+        </div>
+    </div>
+
+    <!-- Kanban Columns -->
+    <div class="kanban-columns">
+        <?php
+        $columns = $this->getData('columns') ?: [];
+        foreach ($columns as $columnId => $column):
+            $column = is_array($column) ? $column : [];
+            $columnTitle = $column['title'] ?? 'Unknown Column';
+            $columnCards = $column['cards'] ?? [];
+        ?>
+            <div class="kanban-column"
+                 @drop="moveCard"
+                 data-column-id="<?php echo htmlspecialchars($columnId) ?>">
+
+                <div class="column-header">
+                    <h3><?php echo htmlspecialchars($columnTitle) ?></h3>
+                    <span class="card-count"><?php echo count($columnCards) ?></span>
+                </div>
+
+                <div class="column-cards">
+                    <?php foreach ($columnCards as $card):
+                        $card = is_array($card) ? $card : [];
+                        $cardId = $card['id'] ?? 0;
+                        $cardTitle = $card['title'] ?? 'Untitled';
+                        $cardContent = $card['content'] ?? '';
+                        $cardColor = $card['color'] ?? 'blue';
+                    ?>
+                        <div class="kanban-card"
+                             @drag="onDragStart"
+                             data-card-id="<?php echo $cardId ?>"
+                             data-from-column="<?php echo htmlspecialchars($columnId) ?>"
+                             style="background-color: <?php echo $this->getCardColor($cardColor) ?>;">
+
+                            <div class="card-header">
+                                <div class="card-title"><?php echo htmlspecialchars($cardTitle) ?></div>
+                                <button @click="deleteCard(<?php echo $cardId ?>, '<?php echo htmlspecialchars($columnId) ?>')"
+                                        class="delete-btn">×</button>
+                            </div>
+
+                            <div class="card-content">
+                                <?php echo htmlspecialchars($cardContent) ?>
+                            </div>
+
+                            <div class="card-footer">
+                                <span class="card-id">#<?php echo $cardId ?></span>
+                                <?php if (isset($card['price'])): ?>
+                                    <span class="card-price">$<?php echo number_format($card['price'], 2) ?></span>
+                                <?php endif; ?>
+                                <?php if (isset($card['sku'])): ?>
+                                    <span class="card-sku"><?php echo htmlspecialchars($card['sku']) ?></span>
+                                <?php endif; ?>
+                                <div class="card-color" style="background-color: <?php echo $this->getCardColor($cardColor) ?>;"></div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+
+                    <?php if (empty($columnCards)): ?>
+                        <div class="empty-column">
+                            <p>No cards in this column</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+
+    <div #loading class="loading" style="display: none;">
+        Updating board...
+    </div>
+</div>
+
+<style>
+.kanban-board {
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.board-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.board-stats {
+    display: flex;
+    gap: 15px;
+}
+
+.stat {
+    padding: 5px 10px;
+    background: #e3f2fd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1976d2;
+}
+
+.add-card-form {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.card-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.column-select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 120px;
+}
+
+.kanban-columns {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 20px;
+}
+
+.kanban-column {
+    flex: 1;
+    min-width: 300px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.kanban-column.openwire-drag-over {
+    background-color: #e3f2fd;
+    border: 2px dashed #2196f3;
+    transform: scale(1.02);
+}
+
+.column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.column-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.card-count {
+    background: #2196f3;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.column-cards {
+    padding: 15px;
+    min-height: 200px;
+}
+
+.kanban-card {
+    background: white;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: move;
+    transition: all 0.2s ease;
+    border-left: 4px solid;
+}
+
+.kanban-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.kanban-card.openwire-dragging {
+    opacity: 0.7;
+    transform: rotate(5deg) scale(1.05);
+    z-index: 1000;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.card-title {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+    flex: 1;
+    margin-right: 10px;
+}
+
+.delete-btn {
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-btn:hover {
+    background: #d32f2f;
+}
+
+.card-content {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: #999;
+}
+
+.card-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+}
+
+.card-price {
+    background: #4caf50;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+.card-sku {
+    background: #ff9800;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    margin-left: 5px;
+}
+
+.empty-column {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+    font-style: italic;
+    border: 2px dashed #ddd;
+    border-radius: 6px;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .kanban-columns {
+        flex-direction: column;
+    }
+
+    .kanban-column {
+        min-width: auto;
+    }
+
+    .form-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+</style>

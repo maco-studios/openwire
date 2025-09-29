@@ -1,0 +1,149 @@
+<div class="openwire-debug">
+    <h1>Openwire Registry Debug Information</h1>
+
+    <div class="debug-section">
+        <h2>Registry State</h2>
+        <pre><?php echo json_encode($this->getData('registry_info'), JSON_PRETTY_PRINT) ?></pre>
+    </div>
+
+    <div class="debug-section">
+        <h2>Test Component Registration</h2>
+        <div class="test-buttons">
+            <button onclick="testRegistration('openwire/component_counter', {initialCount: 1, name: 'Test'})">
+                Test Counter Registration
+            </button>
+            <button onclick="testRegistration('openwire/component_userProfile', {userId: 1, userName: 'Test User'})">
+                Test UserProfile Registration
+            </button>
+        </div>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>Available Components</h2>
+        <?php
+        $helper = Mage::helper('openwire/component');
+        $availableComponents = $helper->getAvailableComponents();
+        ?>
+        <ul>
+            <?php foreach ($availableComponents as $alias => $description): ?>
+                <li><strong><?php echo htmlspecialchars($alias) ?></strong> - <?php echo htmlspecialchars($description) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+
+    <div class="debug-section">
+        <h2>Session Information</h2>
+        <p><strong>Session ID:</strong> <?php echo session_id() ?></p>
+        <p><strong>Form Key:</strong> <?php echo Mage::getSingleton('core/session')->getFormKey() ?></p>
+    </div>
+</div>
+
+<style>
+.openwire-debug {
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #f5f5f5;
+    border-radius: 8px;
+}
+
+.debug-section {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.debug-section h2 {
+    margin: 0 0 15px 0;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.debug-section pre {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 15px;
+    overflow-x: auto;
+    font-size: 12px;
+}
+
+.test-buttons {
+    margin-bottom: 15px;
+}
+
+.test-buttons button {
+    padding: 10px 15px;
+    margin-right: 10px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.test-buttons button:hover {
+    background: #0056b3;
+}
+
+#test-results {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 15px;
+    min-height: 50px;
+}
+
+#test-results pre {
+    margin: 0;
+    background: transparent;
+    border: none;
+    padding: 0;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+li:last-child {
+    border-bottom: none;
+}
+</style>
+
+<script>
+function testRegistration(componentAlias, params) {
+    const resultsDiv = document.getElementById('test-results');
+    resultsDiv.innerHTML = '<p>Testing component registration...</p>';
+
+    // Test registration via AJAX
+    fetch('/openwire/example/testRegistration', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            component_alias: componentAlias,
+            params: params,
+            form_key: window.formKey || document.querySelector('input[name="form_key"]')?.value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        resultsDiv.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+    })
+    .catch(error => {
+        resultsDiv.innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+    });
+}
+</script>

@@ -1,0 +1,299 @@
+<div ow class="task-list-container">
+    <div class="task-list-header">
+        <h2>Product Management</h2>
+        <div class="task-stats">
+            <?php
+            $counts = $this->getTaskCounts() ?: ['total' => 0, 'active' => 0, 'completed' => 0];
+            ?>
+            <span class="stat">Total Products: <?php echo $counts['total'] ?></span>
+            <span class="stat">Active: <?php echo $counts['active'] ?></span>
+            <span class="stat">Completed: <?php echo $counts['completed'] ?></span>
+        </div>
+    </div>
+
+    <!-- Add New Product Form -->
+    <div class="add-task-form">
+        <h3>Add New Product</h3>
+        <div class="form-row">
+            <input type="text"
+                   placeholder="Product name..."
+                   #model="newTaskTitle"
+                   class="task-input" />
+            <button @click="addTask" class="btn btn-primary">
+                Add Product
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+        <button @click="setFilter" class="btn btn-sm <?php echo $this->getData('filter') === 'all' ? 'btn-primary' : 'btn-secondary' ?>">
+            All
+        </button>
+        <button @click="setFilter" class="btn btn-sm <?php echo $this->getData('filter') === 'active' ? 'btn-primary' : 'btn-secondary' ?>">
+            Active
+        </button>
+        <button @click="setFilter" class="btn btn-sm <?php echo $this->getData('filter') === 'completed' ? 'btn-primary' : 'btn-secondary' ?>">
+            Completed
+        </button>
+        <button @click="clearCompleted" class="btn btn-sm btn-warning">
+            Clear Completed
+        </button>
+    </div>
+
+    <!-- Sortable Task List -->
+    <div class="task-list" @sortable="reorderTasks">
+        <?php foreach ($this->getFilteredTasks() ?: [] as $index => $task): ?>
+            <div class="task-item <?php echo $task['completed'] ? 'completed' : '' ?> <?php echo $this->getPriorityClass($task['priority']) ?>"
+                 data-sortable-item
+                 data-task-id="<?php echo $task['id'] ?>">
+
+                <div class="task-content">
+                    <div class="task-checkbox">
+                        <input type="checkbox"
+                               <?php echo $task['completed'] ? 'checked' : '' ?>
+                               @change="toggleTask(<?php echo $task['id'] ?>)" />
+                    </div>
+
+                    <div class="task-details">
+                        <div class="task-title"><?php echo htmlspecialchars($task['title']) ?></div>
+                        <div class="task-meta">
+                            <span class="priority-badge priority-<?php echo $task['priority'] ?>">
+                                <?php echo ucfirst($task['priority']) ?>
+                            </span>
+                            <?php if (isset($task['price'])): ?>
+                                <span class="price-badge">$<?php echo number_format($task['price'], 2) ?></span>
+                            <?php endif; ?>
+                            <?php if (isset($task['sku'])): ?>
+                                <span class="sku-badge">SKU: <?php echo htmlspecialchars($task['sku']) ?></span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <div class="task-actions">
+                        <select @change="updateTaskPriority(<?php echo $task['id'] ?>, this.value)"
+                                class="priority-select">
+                            <option value="low" <?php echo $task['priority'] === 'low' ? 'selected' : '' ?>>Low</option>
+                            <option value="medium" <?php echo $task['priority'] === 'medium' ? 'selected' : '' ?>>Medium</option>
+                            <option value="high" <?php echo $task['priority'] === 'high' ? 'selected' : '' ?>>High</option>
+                        </select>
+
+                        <button @click="deleteTask(<?php echo $task['id'] ?>)"
+                                class="btn btn-sm btn-danger">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+
+        <?php if (empty($this->getFilteredTasks())): ?>
+            <div class="empty-state">
+                <p>No tasks found. Add a new task above!</p>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <div #loading class="loading" style="display: none;">
+        Updating tasks...
+    </div>
+</div>
+
+<style>
+.task-list-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.task-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.task-stats {
+    display: flex;
+    gap: 15px;
+}
+
+.stat {
+    padding: 5px 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.add-task-form {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.form-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.task-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.task-list {
+    min-height: 200px;
+}
+
+.task-item {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    padding: 15px;
+    transition: all 0.2s ease;
+    cursor: move;
+}
+
+.task-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transform: translateX(5px);
+}
+
+.task-item.completed {
+    opacity: 0.7;
+    background: #f8f9fa;
+}
+
+.task-item.completed .task-title {
+    text-decoration: line-through;
+    color: #666;
+}
+
+.task-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.task-checkbox input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.task-details {
+    flex: 1;
+}
+
+.task-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.task-meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.priority-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.priority-high {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.priority-medium {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.priority-low {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.price-badge {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-left: 5px;
+}
+
+.sku-badge {
+    background: #f3e5f5;
+    color: #7b1fa2;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-left: 5px;
+}
+
+.task-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.priority-select {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-style: italic;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+/* Drag and drop styles */
+.task-item.openwire-sorting {
+    opacity: 0.7;
+    transform: scale(1.05);
+    z-index: 1000;
+}
+
+.task-list.openwire-drag-over {
+    background-color: #e3f2fd;
+    border: 2px dashed #2196f3;
+    border-radius: 6px;
+}
+</style>

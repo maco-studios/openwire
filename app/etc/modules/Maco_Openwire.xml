@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Maco_Openwire>
+            <active>true</active>
+            <codePool>local</codePool>
+        </Maco_Openwire>
+    </modules>
+</config>

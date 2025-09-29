@@ -1,0 +1,45 @@
+{
+    "name": "maco-studios/openwire",
+    "type": "magento-module",
+    "require-dev": {
+        "ergebnis/composer-normalize": "^2.48",
+        "ergebnis/license": "^2.7",
+        "friendsofphp/php-cs-fixer": "^3.88",
+        "pestphp/pest": "^4.1",
+        "rector/rector": "^2.1"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true,
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "composer-normalize": {
+            "indent-size": 4,
+            "indent-style": "space"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@auto"
+        ],
+        "post-update-cmd": [
+            "@auto"
+        ],
+        "auto": [
+            "@composer normalize"
+        ],
+        "cs": [
+            "@rector:test"
+        ],
+        "cs:fix": [
+            "@rector:fix",
+            "php-cs-fixer fix"
+        ],
+        "rector:test": "vendor/bin/rector process --config .rector.php --dry-run",
+        "rector:fix": "vendor/bin/rector process --config .rector.php"
+    }
+}

@@ -1,0 +1,71 @@
+<div class="magento-block-example">
+    <h4><?php echo htmlspecialchars($this->getData('title')) ?></h4>
+    <p><?php echo htmlspecialchars($this->getData('content')) ?></p>
+
+    <div class="block-info">
+        <p><strong>Block Class:</strong> <?php echo $this::class ?></p>
+        <p><strong>Template:</strong> <?php echo $this->getTemplate() ?></p>
+        <p><strong>Timestamp:</strong> <?php echo date('Y-m-d H:i:s') ?></p>
+    </div>
+
+    <div class="block-actions">
+        <button onclick="alert('This is a Magento block action!')" class="btn btn-primary">
+            Block Action
+        </button>
+    </div>
+</div>
+
+<style>
+.magento-block-example {
+    padding: 15px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    margin: 10px 0;
+}
+
+.magento-block-example h4 {
+    margin: 0 0 10px 0;
+    color: #495057;
+}
+
+.magento-block-example p {
+    margin: 0 0 10px 0;
+    color: #6c757d;
+}
+
+.block-info {
+    background: white;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+    margin: 10px 0;
+    font-size: 12px;
+}
+
+.block-info p {
+    margin: 5px 0;
+    color: #495057;
+}
+
+.block-actions {
+    margin-top: 15px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+</style>
