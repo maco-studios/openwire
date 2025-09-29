@@ -1,0 +1,5 @@
+app/code/local/Maco/Openwire                                                    app/code/local/Maco/Openwire
+app/design/adminhtml/default/default/layout/openwire.xml                        app/design/adminhtml/default/default/layout/openwire.xml
+app/design/frontend/base/default/template/openwire                              app/design/frontend/base/default/template/openwire
+app/design/frontend/base/default/layout/openwire.xml                            app/design/frontend/base/default/layout/openwire.xml
+js/openwire/dist/openwire.js                                                    js/openwire/dist/openwire.js

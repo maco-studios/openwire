@@ -3,3 +3,9 @@
 /.rector.result.cache
 /node_modules
 /js/openwire/dist
+
+# MkDocs
+/site
+
+# Python virtual environment
+/venv

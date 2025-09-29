@@ -11,7 +11,10 @@
         "build": "vite build",
         "preview": "vite preview --port 5173",
         "test": "vitest run",
-        "test:watch": "vitest"
+        "test:watch": "vitest",
+        "docs:serve": "mkdocs serve",
+        "docs:build": "mkdocs build",
+        "docs:deploy": "mkdocs gh-deploy"
     },
     "devDependencies": {
         "happy-dom": "^18.0.1",
