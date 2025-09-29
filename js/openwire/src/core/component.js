@@ -76,21 +76,13 @@ export class Component {
         // Show loading state
         this.showLoading();
 
+        // Build stateless payload with component class + current state
         const payload = {
-            id: this.id,
+            component: this.name || this._getComponentClass(),
+            state: this.data,
             calls: [{ method, params }],
             form_key: getMagentoFormKey()
         };
-
-        // Add server class and initial state if component has them
-        if (this.element.hasAttribute(ATTR.NAME)) {
-            payload.server_class = this.element.getAttribute(ATTR.NAME);
-        }
-
-        const initialState = this.element.getAttribute(ATTR.STATE);
-        if (initialState) {
-            payload.initial_state = safeJsonParse(initialState, {});
-        }
 
         sendCall(API.UPDATE, payload)
             .then(response => {
@@ -149,21 +141,13 @@ export class Component {
         const updates = {};
         updates[property] = value;
 
+        // Build stateless payload with component class + current state
         const payload = {
-            id: this.id,
+            component: this.name || this._getComponentClass(),
+            state: this.data,
             updates: updates,
             form_key: getMagentoFormKey()
         };
-
-        // Add server class and initial state if component has them
-        if (this.element.hasAttribute(ATTR.NAME)) {
-            payload.server_class = this.element.getAttribute(ATTR.NAME);
-        }
-
-        const initialState = this.element.getAttribute(ATTR.STATE);
-        if (initialState) {
-            payload.initial_state = safeJsonParse(initialState, {});
-        }
 
         sendUpdate(API.UPDATE, payload)
             .then(response => {
@@ -190,9 +174,9 @@ export class Component {
             return;
         }
 
-        // Update component data
-        if (response.data) {
-            this.data = response.data;
+        // Update component data with new state
+        if (response.state) {
+            this.data = response.state;
         }
 
         // Update the DOM with new content if provided

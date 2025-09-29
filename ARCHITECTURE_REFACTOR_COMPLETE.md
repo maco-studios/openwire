@@ -1,160 +1,189 @@
-# OpenWire Architecture Refactoring Complete
+# OpenWire refactor — Proposal & Acceptance Criteria
 
-## ✅ Successfully Refactored OpenWire Module Architecture
+This document is a concise, actionable specification describing the desired end state for the OpenWire refactor. It translates the current refactor work into an explicit proposal with contracts, quality gates, migration guidance, and acceptance criteria so the team can finish, verify, and ship the changes with confidence.
 
-### 🏗️ **New Architecture Overview**
+## Goals
 
-```
+- Move UI components into Magento Block classes and keep business logic in Models/Helpers.
+- Provide a stable server-side API and a deterministic compiled template output consumed by the JS runtime.
+- Preserve backwards compatibility for existing payload formats and DOM attributes used by the JS runtime.
+- Add a small, testable component set (Counter) as a canonical example and template for future components.
+
+## Target architecture (filesystem view)
+
 app/code/local/Maco/Openwire/
-├── Block/
-│   └── Component/
-│       ├── Abstract.php    # Base component block (extends Mage_Core_Block_Template)
-│       └── Counter.php     # Example counter component
-├── Model/
-│   ├── Component/
-│   │   ├── Factory.php     # Creates component instances (business logic)
-│   │   ├── Registry.php    # Manages component sessions (data layer)
-│   │   ├── Resolver.php    # Resolves component classes (business logic)
-│   │   └── Hydrator.php    # Hydrates component state (business logic)
-│   ├── Template/           # Template processing (business logic)
-│   └── Response.php        # Response handling (business logic)
-├── Helper/
-│   ├── Data.php           # Utility functions
-│   ├── SessionStore.php   # Session utilities
-│   └── Debug.php          # Debug utilities
-└── controllers/
-    └── UpdateController.php # AJAX request handling
-```
+- Block/
+    - Component/
+        - Abstract.php        # Base block for components (extends Mage_Core_Block_Template)
+        - Counter.php         # Example component (minimal, testable)
+- Model/
+    - Component/
+        - Factory.php         # Instantiates block components (business rules)
+        - Resolver.php        # Resolves server component classes (createBlock)
+        - Hydrator.php        # Hydrates component state from request payload
+        - Store.php?          # OPTIONAL: persistent per-component store with explicit lifecycle (DB/cache + TTL)
+    - Template/             # Template compilation and attribute transforms
+    - Response.php          # Normalized server response builder (html, state, effects)
+- Helper/
+    - Data.php
+    - Debug.php
+- controllers/
+    - UpdateController.php  # /openwire/update/index — receives JSON payloads and handles stateless rendering
 
-### 🔄 **Key Changes Made**
+## Component contract (server-side)
 
-#### **1. Semantic Organization**
-- ✅ **UI Components** → `Block/Component/` (correct for Magento)
-- ✅ **Business Logic** → `Model/` (factories, registries, template processing)
-- ✅ **Utilities** → `Helper/` (session management, debugging)
-- ✅ **Request Handling** → `controllers/` (AJAX endpoints)
+- Inputs: JSON POST with fields — id (client-generated instance id), calls[], updates, form_key, server_class (optional), initial_state (optional).
+- Core design: the server must not rely on PHP session storage or a central registry to identify or keep component state. The authoritative state for a component request is provided by the client in `initial_state` or derived from the last returned `state` the client has.
+- Outputs: JSON with shape { html: string, state: object, effects: array }.
+- Error modes: return 400 for malformed payload, return { effects: [{ type: 'notify', level: 'error', message }] } for recoverable errors.
 
-#### **2. Class Hierarchy Updates**
-- ✅ `Maco_Openwire_Block_Component_Abstract extends Mage_Core_Block_Template`
-- ✅ Component classes now properly integrate with Magento's block system
-- ✅ Template rendering through Magento's layout system
+Acceptance for each component:
+- Must render deterministic HTML given a state object passed in the request.
+- Must expose public methods callable via `calls[]` and may return updated state to the client.
+- Must not rely on server-side session or a global registry to look up component data.
+- Must avoid embedding server-only secrets into client-visible state.
 
-#### **3. API Structure Fixed**
-- ✅ JavaScript API now sends correct payload format matching original script
-- ✅ Component factory creates Block instances instead of Model instances
-- ✅ Resolver updated to use `createBlock()` instead of `getModel()`
+Notes on component identity and lifetime
+- Component instances are primarily owned by the client. The `id` value is an opaque identifier generated by the client (or assigned by the server via a `registered` effect). The server should treat `id` as an ephemeral token and never rely on server session to persist a mapping.
+- If server-side persistence is required (for long-lived server-owned workflows), implement an explicit Component Store (e.g., `Model/Component/Store.php`) that stores component state keyed by a server-generated token and enforces an explicit lifecycle (create, refresh, destroy) and TTL. This is optional and must be used only when stateless operation is insufficient.
+- Preferred flow: stateless — client sends full relevant state with each request (diffs allowed), server computes new state and returns it. This makes horizontal scaling, caching, and debugging simpler.
 
-### 🐛 **Fixed Issues**
+## Client/server protocol (JS runtime expectations)
 
-#### **Original Problems:**
-1. ❌ Components were incorrectly placed in `Model/` directory
-2. ❌ Semantic mismatch: UI components as data models
-3. ❌ JavaScript API payload mismatch
-4. ❌ Component initialization attribute mismatch
+- Payloads (examples kept for exact compatibility):
+    - Method calls (stateless preferred):
+        { id: "component_id", calls: [{ method: "increment", params: [] }], initial_state: { count: 0 }, form_key: "..." }
+    - Property updates (client includes current/changed state):
+        { id: "component_id", updates: { count: 5 }, form_key: "...", initial_state: { count: 4 } }
 
-#### **Solutions:**
-1. ✅ Moved UI components to `Block/Component/`
-2. ✅ Proper inheritance: `extends Mage_Core_Block_Template`
-3. ✅ Updated JavaScript to send original payload format
-4. ✅ Fixed template compilation to add `data-openwire-component` attribute
+Notes: clients SHOULD include `initial_state` (full or partial) when calling methods unless the component has just been `registered` by the server and the server provided an authoritative token and initial state.
 
-### 📋 **Component Counter Example**
+- DOM attributes (must match runtime code exactly):
+    - `data-openwire-component` — marks compiled component root
+    - `data-openwire-id` — component instance id
+    - `data-openwire-class` / `data-openwire-name` — server class reference for anonymous components
+    - `data-openwire-click` — click handler -> server method
+    - `data-openwire-submit` — form submit handler
+    - `data-openwire-model` & `data-openwire-model-mode` — input binding (supports `lazy`)
+    - `data-openwire-bind` — places state values into markup
+    - `data-openwire-ignore` — preserve DOM node during updates
+    - `data-openwire-loading` — loading indicator
+    - sortable/drag/drop attributes: `data-openwire-sortable`, `data-openwire-drag`, `data-openwire-drop`
 
-**Template (counter.phtml):**
-```html
-<div ow>
-    <h3>Counter</h3>
-    <button @click="increment">Count: <?php echo $this->getCount() ?></button>
-    <p>Hello, <?php echo $this->getName() ?></p>
-    <div #loading style="display:none;">Loading...</div>
-</div>
-```
+Do not change the attribute names without updating `js/openwire/src` and the bundled `openwire.js`.
 
-**Compiled Output:**
-```html
-<div data-openwire-component data-openwire-id="counter_123">
-    <h3>Counter</h3>
-    <button data-openwire-click="increment">Count: 0</button>
-    <p>Hello, Guest</p>
-    <div data-openwire-loading style="display:none;">Loading...</div>
-</div>
-```
+## Effects API
 
-**Component Class:**
-```php
-class Maco_Openwire_Block_Component_Counter extends Maco_Openwire_Block_Component_Abstract
-{
-    public function increment() {
-        $this->setData('count', $this->getData('count') + 1);
-        return $this;
-    }
-    // ... other methods
-}
-```
+- Server may return effects in the response to be handled by client plugins. Known effects:
+    - notify — show UI notification
+    - redirect — client navigation
+    - registered — assign ids to newly-created server components (server assigns token and optionally authoritative state)
+    - destroyed — notify client that a server-side component instance was terminated
 
-### 🔧 **JavaScript Integration**
+Design: effects must be explicit, typed, and serializable. When a `registered` effect is used to hand a server-generated token to the client, the server must also provide the initial authoritative state and explicit lifetime/TTL metadata if a persistent store is used.
 
-#### **Fixed Payload Structure:**
-```javascript
-// Method calls
-{
-    id: "component_id",
-    calls: [{ method: "increment", params: [] }],
-    form_key: "ABC123"
-}
+## Development workflows (developer-friendly commands)
 
-// Property updates  
-{
-    id: "component_id", 
-    updates: { count: 5 },
-    form_key: "ABC123"
-}
-```
+- JavaScript
+    - Install: npm install
+    - Dev server: npm run dev
+    - Build: npm run build
+    - Run tests: npm run test (Vitest)
 
-#### **Component Attributes:**
-- ✅ `data-openwire-component` - Marks element as component
-- ✅ `data-openwire-id` - Component instance ID
-- ✅ `data-openwire-click` - Click event handlers
-- ✅ `data-openwire-loading` - Loading state indicators
+- PHP
+    - Install dependencies: composer install
+    - Static checks and style: vendor/bin/php-cs-fixer fix --config=.php_cs.dist (or project config)
+    - Automated refactors: vendor/bin/rector
 
-### 🎯 **Benefits Achieved**
+These commands are referenced from the repo and must remain runnable; if CI fails, update scripts accordingly.
 
-1. **✅ Semantically Correct Architecture**
-   - Components are Blocks (UI logic) ✓
-   - Models handle data/business logic ✓
-   - Helpers provide utilities ✓
+## Tests and quality gates (acceptance criteria)
 
-2. **✅ Magento Integration**
-   - Proper block inheritance ✓
-   - Layout system compatibility ✓
-   - Template system integration ✓
+Each change must satisfy the following before merge:
 
-3. **✅ Maintainable Code**
-   - Clear separation of concerns ✓
-   - Standard Magento patterns ✓
-   - Extensible architecture ✓
+- Build: JS bundle builds (npm run build) and PHP autoload works (composer dump-autoload).
+- Lint/Style: No php-cs-fixer/ESLint violations.
+- Unit tests: Vitest for JS passes; add PHP-unit or Pest tests for critical Model/Helper logic where relevant.
+- Smoke test: Manually or via a lightweight integration test, exercise `/openwire/update/index` with a Counter payload and assert response shape and `data-openwire-*` attributes in returned HTML.
 
-4. **✅ Working Counter Component**
-   - Template compilation works ✓
-   - JavaScript event binding works ✓
-   - AJAX communication works ✓
-   - State management works ✓
+Minimum automated tests to add before merge:
+- JS: one test that mounts the runtime and verifies method-call payload creation, includes `initial_state` in the payload, and correctly handles `registered` and `destroyed` effects.
+- PHP: two unit tests for `Model/Component/Resolver` and `Model/Component/Factory` ensuring block creation without session dependency, and one test for `Hydrator` that hydrates a block from `initial_state` passed in the request.
 
-### 🚀 **Next Steps**
+Quality gates mapping (for reviewers):
+- Build: PASS
+- Lint/Typecheck: PASS
+- Unit tests: PASS
+- Smoke request: PASS
 
-1. **Test the Counter Component** - Verify full functionality
-2. **Create Additional Components** - TodoList, KanbanBoard, etc.
-3. **Update Documentation** - Reflect new architecture
-4. **Add Layout XML Support** - Enable components in layout files
+## Migration & compatibility
 
-### 📦 **Files Changed**
+- Keep the runtime payload format and DOM attributes stable. If a breaking change is required, provide a migration shim in `js/openwire/src` and document migration steps in `docs/getting-started/`.
+- Remove server reliance on PHP session storage and registry. Provide a compatibility shim that accepts old requests but converts them to the new stateless shape by extracting any server-only session mappings and embedding the necessary state into the response and/or returning a `registered` effect with a server token and state.
 
-- **Moved**: 4 component-related classes to proper directories
-- **Updated**: 20+ PHP files with new class references
-- **Fixed**: JavaScript API payload structure
-- **Enhanced**: Template compilation system
-- **Created**: Example Counter component
+Migration checklist:
+1. Make server code accept both session-backed and stateless payloads during a transition window; produce a `deprecation` effect when old behavior is used.
+2. Deploy PHP changes to a staging Magento instance.
+3. Deploy `openwire.js` that sends `initial_state` by default (small client change) and verify no console errors.
+4. Run automated smoke tests.
+5. Monitor logs for deprecated flows and unexpected effect types.
+
+## Deliverables
+
+- Refactored module under `app/code/local/Maco/Openwire/` matching the target tree above and avoiding session/registry-based component identity.
+- A working `Counter` component with template, block, model support and tests demonstrating stateless operation and optional server-registered lifecycle.
+- Updated `js/openwire` runtime that includes `initial_state` in payloads when appropriate and handles `registered`/`destroyed` effects.
+- Documentation updates under `docs/` and the generated `site/` showing how to author components, the stateless contract, and how to use the optional Component Store when required.
+- CI checks added or updated to run build, lint, and tests.
+
+## Files expected to change (non-exhaustive)
+
+- app/code/local/Maco/Openwire/Block/Component/* — component blocks
+- app/code/local/Maco/Openwire/Model/Component/* — factory, resolver, hydrator (remove registry/session reliance); optional `Store.php` if persistent lifecycle is required
+- app/code/local/Maco/Openwire/Model/Template/* — template compiler adjustments
+- app/code/local/Maco/Openwire/controllers/UpdateController.php — request handler: accept `initial_state` and be stateless by default
+- js/openwire/src/* and openwire.js — runtime adjustments to include `initial_state` when invoking server and tests
+- docs/* — developer documentation and migration guide
+
+## Risks & mitigations
+
+- Risk: breaking existing installations that relied on previous file/class locations or session-backed state.
+    - Mitigation: class aliasing (Magento autoload fallbacks) and a short transition compatibility shim that accepts session-backed requests and converts them to the new stateless flow while emitting a deprecation effect.
+- Risk: increased payload sizes because client now includes state in requests.
+    - Mitigation: encourage sending diffs (partial state), compress responses where appropriate, and keep state shapes small (avoid sending large blobs). Document best practices.
+- Risk: incorrect assumptions about authoritative state (client vs server).
+    - Mitigation: provide clear rules: client is authoritative for ephemeral UI state; server may be authoritative only when it returns a `registered` token and announces lifetime/TTL.
+- Risk: form_key resolution differences between Magento versions.
+    - Mitigation: keep the current multi-source resolution (window.FORM_KEY, window.formKey, input[name="form_key"]). Document it.
+
+## Timeline & owners (suggested)
+
+- Week 1: finalize core Model/Block contracts, implement Resolver/Factory, and add PHP unit tests — owner: backend
+- Week 2: finish template compiler and Counter component, add JS tests — owner: frontend
+- Week 3: integration smoke tests, docs, CI — owner: cross-functional
+
+
+## Acceptance checklist (done → merge)
+
+- [ ] All code placed in the target paths and follows PSR-12 and PHP 8.3 style (readonly properties where applicable).
+- [ ] No reliance on PHP session or a global registry to hydrate component state on the server-side (verify via tests/code review).
+- [ ] JS runtime produces expected payloads (including `initial_state` when appropriate) and handles `effects` correctly.
+- [ ] Unit tests (JS + PHP) and linting pass in CI.
+- [ ] Documentation updated: examples and developer guide.
+- [ ] Smoke test against a staging Magento instance passes.
+
+## Next steps
+
+1. Review this proposal with the team and agree owners and timeline.
+2. Create issues for any outstanding gaps (template compiler, compatibility shim, tests).
+3. Implement remaining pieces and run the quality gates.
 
 ---
 
-**🎉 The OpenWire module now follows proper Magento 1 architecture patterns and should have working component functionality!**
+If you'd like, I can now:
+
+- Open PR draft contents with the necessary file moves and minimal tests.
+- Add the two PHP unit tests and one JS test described above.
+- Generate the migration shim and a short staging smoke test script.
+
+Tell me which of those you want me to do next and I'll implement it.

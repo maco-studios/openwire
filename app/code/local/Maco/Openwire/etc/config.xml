@@ -19,12 +19,66 @@
             <openwire_resource>
                 <class>Maco_Openwire_Model_Resource</class>
             </openwire_resource>
+            <core>
+                <rewrite>
+                    <layout>
+                        <class>Maco_Openwire_Model_Layout</class>
+                    </layout>
+                </rewrite>
+            </core>
         </models>
         <blocks>
             <openwire>
                 <class>Maco_Openwire_Block</class>
             </openwire>
         </blocks>
+        <!-- OpenWire Template Directive Registration -->
+        <openwire>
+            <template>
+                <directives>
+                    <click>
+                        <class>Maco_Openwire_Model_Template_Directive_Click</class>
+                        <pattern>@click</pattern>
+                    </click>
+                    <submit>
+                        <class>Maco_Openwire_Model_Template_Directive_Submit</class>
+                        <pattern>@submit</pattern>
+                    </submit>
+                    <input>
+                        <class>Maco_Openwire_Model_Template_Directive_Input</class>
+                        <pattern>@input</pattern>
+                    </input>
+                    <change>
+                        <class>Maco_Openwire_Model_Template_Directive_Change</class>
+                        <pattern>@change</pattern>
+                    </change>
+                    <drag>
+                        <class>Maco_Openwire_Model_Template_Directive_Drag</class>
+                        <pattern>@drag</pattern>
+                    </drag>
+                    <drop>
+                        <class>Maco_Openwire_Model_Template_Directive_Drop</class>
+                        <pattern>@drop</pattern>
+                    </drop>
+                    <sortable>
+                        <class>Maco_Openwire_Model_Template_Directive_Sortable</class>
+                        <pattern>@sortable</pattern>
+                    </sortable>
+                    <model>
+                        <class>Maco_Openwire_Model_Template_Directive_Model</class>
+                        <pattern>#model</pattern>
+                    </model>
+                    <loading>
+                        <class>Maco_Openwire_Model_Template_Directive_Loading</class>
+                        <pattern>#loading</pattern>
+                    </loading>
+                    <ignore>
+                        <class>Maco_Openwire_Model_Template_Directive_Ignore</class>
+                        <pattern>#ignore</pattern>
+                    </ignore>
+                </directives>
+            </template>
+        </openwire>
     </global>
     <frontend>
         <routers>

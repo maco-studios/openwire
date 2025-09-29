@@ -1,138 +1,223 @@
 <?php
 
-/**
- * Copyright (c) 2025 MACO
- *
- * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
- *
- * @see https://github.com/maco-studios/openwire
- */
+declare(strict_types=1);
 
+/**
+ * Stateless OpenWire Update Controller
+ * Handles component updates without session dependencies
+ *
+ * Accepts JSON payloads with format:
+ * {
+ *   "id": "component_id",
+ *   "calls": [{"method": "methodName", "params": []}],
+ *   "updates": {"prop": "value"},
+ *   "form_key": "csrf_token",
+ *   "server_class": "openwire/component_counter", // optional
+ *   "initial_state": {"count": 0} // optional
+ * }
+ *
+ * Returns JSON response:
+ * {
+ *   "success": true,
+ *   "html": "<div>...</div>",
+ *   "state": {"count": 1},
+ *   "effects": [{"type": "notify", "data": {"message": "Updated!"}}]
+ * }
+ */
 class Maco_Openwire_UpdateController extends Mage_Core_Controller_Front_Action
 {
+    private readonly Maco_Openwire_Model_Component_Factory $factory;
+    private readonly Maco_Openwire_Model_Component_Hydrator $hydrator;
+
+    public function __construct(Zend_Controller_Request_Abstract $request, Zend_Controller_Response_Abstract $response, array $invokeArgs = [])
+    {
+        parent::__construct($request, $response, $invokeArgs);
+        $this->factory = Mage::getModel('openwire/component_factory');
+        $this->hydrator = Mage::getModel('openwire/component_hydrator');
+    }
+
     public function indexAction()
     {
-        $handler = Mage::getModel('openwire/exception_handler');
         try {
-            // Read JSON body first so we can validate form_key inside the payload
-            $raw = $this->getRequest()->getRawBody();
-            $data = json_decode($raw, true);
-            if (!is_array($data)) {
-                throw new Exception('Invalid request payload');
-            }
+            // Parse and validate request
+            $payload = $this->parseRequest();
+            $this->validateFormKey($payload);
 
-            $this->validateFormKey($data);
-
-            $componentId = $data['id'] ?? null;
-            $updates = $data['updates'] ?? [];
-            $calls = $data['calls'] ?? [];
-
-            $factory = Mage::getModel('openwire/component_factory');
-
-            // Support anonymous server-backed components: client may provide server_class + initial_state
-            if (empty($componentId) && !empty($data['server_class'])) {
-                $serverClass = $data['server_class'];
-                $initialState = $data['initial_state'] ?? [];
-                $component = $factory->make($serverClass, (array) $initialState);
-                // anonymous components are transient; we won't register them in the session by default
-            } else {
-                $registry = Mage::getModel('openwire/component_registry');
-                $entry = $registry->load($componentId);
-                if (!$entry) {
-                    // Log available components for debugging
-                    $allEntries = $registry->loadAll();
-                    $availableIds = array_keys($allEntries);
-                    Mage::log("Openwire: Component not found. ID: {$componentId}, Available IDs: " . implode(', ', $availableIds));
-                    throw new Exception("Component not found: {$componentId}");
-                }
-
-                $component = $factory->make($entry['class'], $entry['state'] ?? []);
-
-                // ensure id is set on component instance
-                if (method_exists($component, 'setData')) {
-                    $component->setData('id', $componentId);
-                }
-            }
-
-            foreach ($updates as $prop => $val) {
-                $component->update($prop, $val);
-            }
-
-            foreach ($calls as $call) {
-                if (isset($call['method'])) {
-                    $component->call($call['method'], $call['params'] ?? []);
-                }
-            }
-
-            // persist state only for registered components
-            if (!empty($componentId) && isset($registry)) {
-                $registry->saveStateById($componentId, $component->getState());
-            }
-
+            // Create response builder
             $response = Mage::getModel('openwire/response');
-            // allow components to request registration by returning an effect of type 'register'
-            $effects = $component->getEffects();
-            $registeredId = null;
-            if (is_array($effects)) {
-                foreach ($effects as &$fx) {
-                    if (isset($fx['type']) && $fx['type'] === 'register') {
-                        // register the component in the session registry
-                        try {
-                            $registry = Mage::getModel('openwire/component_registry');
-                            $registeredId = $registry->registerComponent($component);
-                            // set id on component
-                            if ($registeredId && method_exists($component, 'setData')) {
-                                $component->setData('id', $registeredId);
-                            }
-                            // replace the effect with a registered event that includes id
-                            $fx['type'] = 'registered';
-                            if (!isset($fx['data']) || !is_array($fx['data'])) {
-                                $fx['data'] = [];
-                            }
-                            $fx['data']['id'] = $registeredId;
-                            // persist state under the new id
-                            $registry->saveStateById($registeredId, $component->getState());
-                        } catch (Exception $e) {
-                            // ignore registration failures for now
-                        }
-                    }
+
+            // Determine component class
+            $componentClass = $this->determineComponentClass($payload);
+            if (!$componentClass) {
+                throw new Exception('Component class must be specified for stateless operation');
+            }
+
+            // Merge initial state with updates
+            $initialState = $payload['initial_state'] ?? [];
+            $updates = $payload['updates'] ?? [];
+            $fullState = array_merge($initialState, $updates);
+
+            // Create and hydrate component
+            $component = $this->factory->create($componentClass, $fullState);
+
+            // Process method calls
+            $this->processCalls($component, $payload['calls'] ?? []);
+
+            // Render component
+            $html = $this->renderComponent($component);
+            $state = $this->hydrator->extractState($component);
+
+            // Build response
+            $response->setHtml($html);
+            $response->setState($state);
+
+            // Add component effects if available
+            if (method_exists($component, 'getEffects')) {
+                $effects = $component->getEffects();
+                if (is_array($effects)) {
+                    $response->addEffects($effects);
                 }
             }
 
-            $response->setHtml($component->render())
-                ->setState($component->getState())
-                ->setEffects(is_array($effects) ? $effects : [])
-                ->setErrors($component->getErrors());
+            // Add registered effect for new components
+            if (!isset($payload['id']) || empty($payload['id'])) {
+                $response->addRegistered($component->getId());
+            }
 
-            $this->getResponse()->setHeader('Content-Type', 'application/json');
-            $this->getResponse()->setBody(json_encode($response->toArray()));
+            $this->sendJsonResponse($response->toArray());
 
         } catch (Exception $e) {
-            $err = $handler->handle($e);
-            $this->getResponse()->setHttpResponseCode(500);
-            $this->getResponse()->setBody(json_encode(['error' => $err['message']]));
+            Mage::log("OpenWire Error: " . $e->getMessage());
+            $this->sendErrorResponse($e->getMessage(), 400);
         }
     }
 
     /**
-     * Validate CSRF form key. Accepts decoded JSON payload (from fetch) or
-     * falls back to request param for traditional form POSTs.
-     *
-     * @param array|null $payload
-     * @throws Exception
+     * Parse and validate the JSON request payload
      */
-    private function validateFormKey(array $payload = null)
+    private function parseRequest(): array
     {
-        $formKey = null;
-        if (is_array($payload) && isset($payload['form_key'])) {
-            $formKey = $payload['form_key'];
-        } else {
-            $formKey = $this->getRequest()->getParam('form_key');
+        $raw = $this->getRequest()->getRawBody();
+        if (empty($raw)) {
+            throw new Exception('Empty request body');
         }
 
-        if ($formKey !== Mage::getSingleton('core/session')->getFormKey()) {
+        $data = json_decode($raw, true);
+        if (!is_array($data)) {
+            throw new Exception('Invalid JSON payload');
+        }
+
+        return $data;
+    }
+
+    /**
+     * Validate the form key for CSRF protection
+     */
+    private function validateFormKey(array $payload): void
+    {
+        if (!isset($payload['form_key'])) {
+            throw new Exception('Form key required');
+        }
+
+        $sessionFormKey = Mage::getSingleton('core/session')->getFormKey();
+        if ($payload['form_key'] !== $sessionFormKey) {
             throw new Exception('Invalid form key');
         }
+    }
+
+    /**
+     * Determine the component class from the payload
+     */
+    private function determineComponentClass(array $payload): ?string
+    {
+        // Check for explicit server_class
+        if (isset($payload['server_class']) && !empty($payload['server_class'])) {
+            return $payload['server_class'];
+        }
+
+        // Check for legacy component field
+        if (isset($payload['component']) && !empty($payload['component'])) {
+            return $payload['component'];
+        }
+
+        // For existing components, we'd need to resolve from ID
+        // but in stateless mode, we require explicit class specification
+        return null;
+    }
+
+    /**
+     * Process method calls on the component
+     */
+    private function processCalls(Maco_Openwire_Block_Component_Abstract $component, array $calls): void
+    {
+        foreach ($calls as $call) {
+            if (!isset($call['method'])) {
+                continue;
+            }
+
+            $method = $call['method'];
+            $params = $call['params'] ?? [];
+
+            if (!method_exists($component, $method)) {
+                throw new Exception("Method '{$method}' not found on component");
+            }
+
+            // Call the method with parameters
+            try {
+                call_user_func_array([$component, $method], $params);
+            } catch (Exception $e) {
+                throw new Exception("Error calling method '{$method}': " . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Render the component to HTML
+     */
+    private function renderComponent(Maco_Openwire_Block_Component_Abstract $component): string
+    {
+        try {
+            if (method_exists($component, 'render')) {
+                return $component->render();
+            }
+
+            // Fallback to toHtml for standard Magento blocks
+            return $component->toHtml();
+        } catch (Exception $e) {
+            throw new Exception("Error rendering component: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Send JSON response
+     */
+    private function sendJsonResponse(array $data): void
+    {
+        $this->getResponse()
+            ->setHeader('Content-Type', 'application/json')
+            ->setBody(json_encode($data, JSON_UNESCAPED_UNICODE));
+    }
+
+    /**
+     * Send error response
+     */
+    private function sendErrorResponse(string $message, int $code = 400): void
+    {
+        $response = Maco_Openwire_Model_Response::error($message);
+
+        $this->getResponse()
+            ->setHttpResponseCode($code)
+            ->setHeader('Content-Type', 'application/json')
+            ->setBody($response->toJson());
+    }
+
+    /**
+     * Legacy method for backwards compatibility
+     * @deprecated Use the new stateless flow
+     */
+    protected function _getComponentManager()
+    {
+        // Return a compatibility wrapper if needed
+        return Mage::getModel('openwire/component_manager');
     }
 }

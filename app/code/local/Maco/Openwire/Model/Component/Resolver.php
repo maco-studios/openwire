@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Copyright (c) 2025 MACO
  *
@@ -9,51 +11,90 @@
  * @see https://github.com/maco-studios/openwire
  */
 
+/**
+ * Component Resolver - Resolves component classes without session dependencies
+ *
+ * This class is responsible for converting component aliases or class names
+ * into actual component instances using Magento's createBlock system.
+ * It operates without relying on session or registry state.
+ */
 class Maco_Openwire_Model_Component_Resolver
 {
     /**
-     * Resolve a component by model alias or class name. Returns an instance or false.
+     * Resolve a component by model alias or class name. Returns an instance or null.
+     *
+     * @param string $classOrAlias Component identifier (e.g., 'openwire/component_counter' or 'MyClass')
+     * @return Maco_Openwire_Block_Component_Abstract|null
      */
-    public function resolve($classOrAlias)
+    public function resolve(string $classOrAlias): ?Maco_Openwire_Block_Component_Abstract
     {
-        // Case 1: Direct block alias
+        // Case 1: Block alias format (e.g., 'openwire/component_counter')
         if (strpos($classOrAlias, '/') !== false) {
-            // For component blocks, convert model aliases to block aliases
-            if (strpos($classOrAlias, 'openwire/component_') === 0) {
-                $blockAlias = str_replace('openwire/component_', 'openwire/component_', $classOrAlias);
-                return Mage::app()->getLayout()->createBlock($blockAlias);
-            }
-            return Mage::app()->getLayout()->createBlock($classOrAlias);
+            return $this->resolveByAlias($classOrAlias);
         }
 
-        // Case 2: Try as component alias (for backwards compatibility)
-        if (strpos($classOrAlias, 'component_') === false) {
-            $alias = 'openwire/component_' . strtolower($classOrAlias);
+        // Case 2: Try auto-resolve common patterns
+        return $this->autoResolve($classOrAlias);
+    }
+
+    /**
+     * Legacy method for backwards compatibility
+     * @deprecated Use resolve() with proper return type checking
+     */
+    public function resolveOld($classOrAlias)
+    {
+        $result = $this->resolve($classOrAlias);
+        return $result ?: false;
+    }
+
+    /**
+     * Resolve component by Magento block alias
+     */
+    private function resolveByAlias(string $alias): ?Maco_Openwire_Block_Component_Abstract
+    {
+        try {
+            // Magento will automatically resolve openwire/component_counter to Maco_Openwire_Block_Component_Counter
+            // based on the block class naming convention and the registered openwire block class
             $instance = Mage::app()->getLayout()->createBlock($alias);
-            if ($instance) {
+
+            if ($instance instanceof Maco_Openwire_Block_Component_Abstract) {
                 return $instance;
             }
-        }
 
-        // Case 3: Direct component alias
-        $instance = Mage::app()->getLayout()->createBlock('openwire/component_' . $classOrAlias);
-        if ($instance) {
-            return $instance;
+            return null;
+        } catch (Exception $e) {
+            Mage::log("Failed to resolve component alias '{$alias}': " . $e->getMessage());
+            return null;
         }
+    }
 
-        // Case 4: Try some common variations
-        $variations = [
-            'openwire/component_' . strtolower($classOrAlias),
-            'openwire/component_' . ucfirst(strtolower($classOrAlias))
+    /**
+     * Auto-resolve common component patterns
+     */
+    private function autoResolve(string $identifier): ?Maco_Openwire_Block_Component_Abstract
+    {
+        // Try common patterns
+        $patterns = [
+            "openwire/component_{$identifier}",
+            "openwire/component_" . strtolower($identifier),
+            "openwire/component_" . ucfirst(strtolower($identifier))
         ];
 
-        foreach ($variations as $aliasAttempt) {
-            $instance = Mage::app()->getLayout()->createBlock($aliasAttempt);
-            if ($instance) {
-                return $instance;
+        foreach ($patterns as $pattern) {
+            $resolved = $this->resolveByAlias($pattern);
+            if ($resolved) {
+                return $resolved;
             }
         }
 
-        return false;
+        return null;
+    }
+
+    /**
+     * Check if a component class/alias can be resolved
+     */
+    public function canResolve(string $classOrAlias): bool
+    {
+        return $this->resolve($classOrAlias) !== null;
     }
 }
