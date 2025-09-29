@@ -4,7 +4,7 @@
     This documentation page is currently being written. Please check back soon for detailed information about OpenWire's drag and drop functionality.
 
     In the meantime, you can:
-    
+
     - Explore the `DragTest` and `KanbanBoard` components in the codebase
     - Check the JavaScript implementation in `js/openwire/src/events/`
     - View the drag and drop directives in the template system

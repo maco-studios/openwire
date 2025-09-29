@@ -4,7 +4,7 @@
     This documentation page is currently being written. Please check back soon for a detailed walkthrough of the Todo List component example.
 
     In the meantime, you can:
-    
+
     - Explore the TodoList component code in `app/code/local/Maco/Openwire/Model/Component/TodoList.php`
     - Check the todo template in `app/design/frontend/base/default/template/openwire/todo.phtml`
     - Review the form handling and array manipulation patterns

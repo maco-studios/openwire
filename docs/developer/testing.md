@@ -4,7 +4,7 @@
     This documentation page is currently being written. Please check back soon for comprehensive testing documentation.
 
     In the meantime, you can:
-    
+
     - Review the existing tests in `js/openwire/tests/`
     - Check the PHP testing setup with Composer
     - Explore the CI configuration in `.github/workflows/`

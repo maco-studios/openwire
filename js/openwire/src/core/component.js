@@ -11,7 +11,7 @@ import {
     error
 } from '../utils';
 import { sendUpdate, sendCall } from '../core/api';
-import { updateDOM } from '../core/dom';
+import { updateDOM, toggleLoading } from '../core/dom';
 import { handleEffects } from '../effects';
 import { bindAllEvents } from '../events';
 
@@ -73,21 +73,35 @@ export class Component {
     callMethod(method, params = []) {
         log(`Calling method: ${method}`, params);
 
+        // Show loading state
+        this.showLoading();
+
         const payload = {
-            component: this.name,
             id: this.id,
-            method,
-            params,
-            formKey: getMagentoFormKey()
+            calls: [{ method, params }],
+            form_key: getMagentoFormKey()
         };
 
-        sendCall(API.CALL, payload)
+        // Add server class and initial state if component has them
+        if (this.element.hasAttribute(ATTR.NAME)) {
+            payload.server_class = this.element.getAttribute(ATTR.NAME);
+        }
+
+        const initialState = this.element.getAttribute(ATTR.STATE);
+        if (initialState) {
+            payload.initial_state = safeJsonParse(initialState, {});
+        }
+
+        sendCall(API.UPDATE, payload)
             .then(response => {
                 this.processResponse(response);
             })
             .catch(err => {
                 error(`Error calling ${method}:`, err);
                 throw err;
+            })
+            .finally(() => {
+                this.hideLoading();
             });
     }
 
@@ -132,13 +146,24 @@ export class Component {
         // Remove from pending updates
         delete this.pendingUpdates[property];
 
+        const updates = {};
+        updates[property] = value;
+
         const payload = {
-            component: this.name,
             id: this.id,
-            property,
-            value,
-            formKey: getMagentoFormKey()
+            updates: updates,
+            form_key: getMagentoFormKey()
         };
+
+        // Add server class and initial state if component has them
+        if (this.element.hasAttribute(ATTR.NAME)) {
+            payload.server_class = this.element.getAttribute(ATTR.NAME);
+        }
+
+        const initialState = this.element.getAttribute(ATTR.STATE);
+        if (initialState) {
+            payload.initial_state = safeJsonParse(initialState, {});
+        }
 
         sendUpdate(API.UPDATE, payload)
             .then(response => {
@@ -198,5 +223,19 @@ export class Component {
      */
     refresh() {
         this.callMethod('$refresh');
+    }
+
+    /**
+     * Show loading state
+     */
+    showLoading() {
+        toggleLoading(this.element, true);
+    }
+
+    /**
+     * Hide loading state
+     */
+    hideLoading() {
+        toggleLoading(this.element, false);
     }
 }

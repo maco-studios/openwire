@@ -16,39 +16,42 @@ class Maco_Openwire_Model_Component_Resolver
      */
     public function resolve($classOrAlias)
     {
-        // alias form: module/model
-        if (str_contains($classOrAlias, '/')) {
-            return Mage::getModel($classOrAlias);
+        // Case 1: Direct block alias
+        if (strpos($classOrAlias, '/') !== false) {
+            // For component blocks, convert model aliases to block aliases
+            if (strpos($classOrAlias, 'openwire/component_') === 0) {
+                $blockAlias = str_replace('openwire/component_', 'openwire/component_', $classOrAlias);
+                return Mage::app()->getLayout()->createBlock($blockAlias);
+            }
+            return Mage::app()->getLayout()->createBlock($classOrAlias);
         }
 
-        // full class name mapping for this module
-        if (str_starts_with($classOrAlias, 'Maco_Openwire_Model_')) {
-            $modelPart = substr($classOrAlias, strlen('Maco_Openwire_Model_'));
-            $alias = 'openwire/' . strtolower($modelPart);
-            $instance = Mage::getModel($alias);
+        // Case 2: Try as component alias (for backwards compatibility)
+        if (strpos($classOrAlias, 'component_') === false) {
+            $alias = 'openwire/component_' . strtolower($classOrAlias);
+            $instance = Mage::app()->getLayout()->createBlock($alias);
             if ($instance) {
                 return $instance;
             }
         }
 
-        // try openwire alias
-        $instance = Mage::getModel('openwire/' . $classOrAlias);
+        // Case 3: Direct component alias
+        $instance = Mage::app()->getLayout()->createBlock('openwire/component_' . $classOrAlias);
         if ($instance) {
             return $instance;
         }
 
-        // try resolving class name to a model alias (strip namespace parts)
-        if (class_exists($classOrAlias)) {
-            // attempt to find a model alias by converting class name
-            $short = preg_replace('/^.*_Model_/', '', $classOrAlias);
-            $aliasAttempt = 'openwire/' . strtolower($short);
-            $instance = Mage::getModel($aliasAttempt);
+        // Case 4: Try some common variations
+        $variations = [
+            'openwire/component_' . strtolower($classOrAlias),
+            'openwire/component_' . ucfirst(strtolower($classOrAlias))
+        ];
+
+        foreach ($variations as $aliasAttempt) {
+            $instance = Mage::app()->getLayout()->createBlock($aliasAttempt);
             if ($instance) {
                 return $instance;
             }
-
-            // fallback to direct instantiation only as last resort
-            return new $classOrAlias();
         }
 
         return false;

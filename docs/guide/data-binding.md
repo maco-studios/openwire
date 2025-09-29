@@ -4,7 +4,7 @@
     This documentation page is currently being written. Please check back soon for comprehensive information about OpenWire's data binding capabilities.
 
     In the meantime, you can:
-    
+
     - Check out the [Basic Usage Guide](../getting-started/basic-usage.md) for data binding examples
     - View the [Quick Start Guide](../getting-started/quick-start.md) for practical examples
     - Explore the existing component templates for real-world usage

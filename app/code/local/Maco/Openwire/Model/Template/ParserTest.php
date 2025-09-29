@@ -24,7 +24,7 @@ class Maco_Openwire_Model_Template_ParserTest
         echo "Running Openwire Template Parser Tests...\n\n";
 
         // Create a mock component
-        $component = Mage::getModel('openwire/component');
+        $component = Mage::getBlockSingleton('openwire/component_abstract'));
         $component->setData('id', 'test_component_123');
         $component->setData('count', 5);
         $component->setData('name', 'Test User');
@@ -140,7 +140,7 @@ class Maco_Openwire_Model_Template_ParserTest
         echo "Custom directive code:\n{$customDirectiveCode}\n";
 
         $parser = Mage::getModel('openwire/template_parser');
-        $component = Mage::getModel('openwire/component');
+        $component = Mage::getBlockSingleton('openwire/component_abstract'));
         $component->setData('id', 'test');
 
         // Register the custom directive

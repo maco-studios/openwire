@@ -4,7 +4,7 @@
     This documentation page is currently being written. Please check back soon for a detailed walkthrough of the Kanban Board component example.
 
     In the meantime, you can:
-    
+
     - Explore the KanbanBoard component code in `app/code/local/Maco/Openwire/Model/Component/KanbanBoard.php`
     - Check the drag and drop implementation
     - Review the complex state management patterns

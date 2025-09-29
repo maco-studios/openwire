@@ -4,7 +4,7 @@
     This documentation page is currently being written. Please check back soon for comprehensive PHP API documentation.
 
     In the meantime, you can:
-    
+
     - Explore the PHP classes in `app/code/local/Maco/Openwire/`
     - Review the base component class and its methods
     - Check the helper classes and template system

@@ -4,7 +4,7 @@
     This documentation page is currently being written. Please check back soon for comprehensive information about OpenWire's template system.
 
     In the meantime, you can:
-    
+
     - Check out the [Components Guide](components.md) for related information
     - View the [Quick Start Guide](../getting-started/quick-start.md) for basic template examples
     - Explore the existing [component examples](../examples/counter.md) in the codebase

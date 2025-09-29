@@ -4,7 +4,7 @@
     This documentation page is currently being written. Please check back soon for comprehensive JavaScript API documentation.
 
     In the meantime, you can:
-    
+
     - Explore the JavaScript source code in `js/openwire/src/`
     - Review the developer guide for extension examples
     - Check the existing tests for API usage patterns

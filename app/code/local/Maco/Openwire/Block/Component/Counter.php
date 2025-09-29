@@ -9,7 +9,7 @@
  * @see https://github.com/maco-studios/openwire
  */
 
-class Maco_Openwire_Model_Component_Counter extends Maco_Openwire_Model_Component
+class Maco_Openwire_Block_Component_Counter extends Maco_Openwire_Block_Component_Abstract
 {
     /**
      * Mount into data-first model. Supported params: initialCount, name

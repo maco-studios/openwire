@@ -4,7 +4,7 @@
     This documentation page is currently being written. Please check back soon for comprehensive information about OpenWire's effects system.
 
     In the meantime, you can:
-    
+
     - Check the effects implementation in `js/openwire/src/effects/`
     - View component examples that return effects
     - Explore the effect handlers in the JavaScript codebase

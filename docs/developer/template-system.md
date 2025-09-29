@@ -4,7 +4,7 @@
     This documentation page is currently being written. Please check back soon for detailed information about OpenWire's template system internals.
 
     In the meantime, you can:
-    
+
     - Explore the template parser code in `app/code/local/Maco/Openwire/Model/Template/`
     - Review the directive system implementation
     - Check existing template examples in component templates

@@ -4,7 +4,7 @@
     This documentation page is currently being written. Please check back soon for detailed information about OpenWire's event handling system.
 
     In the meantime, you can:
-    
+
     - Check out the [Basic Usage Guide](../getting-started/basic-usage.md) for event examples
     - View the [Components Guide](components.md) for event handling patterns
     - Explore the JavaScript source code in `js/openwire/src/events/`

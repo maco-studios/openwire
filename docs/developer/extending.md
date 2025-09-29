@@ -4,7 +4,7 @@
     This documentation page is currently being written. Please check back soon for detailed information about extending OpenWire.
 
     In the meantime, you can:
-    
+
     - Review the [developer guide](../developer-guide.md) for extension examples
     - Explore the plugin system in `js/openwire/src/plugins/`
     - Check the effect handler examples

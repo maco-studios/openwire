@@ -4,7 +4,7 @@
     This documentation page is currently being written. Please check back soon for detailed information about creating OpenWire components.
 
     In the meantime, you can:
-    
+
     - Follow the [Quick Start Guide](../getting-started/quick-start.md) for basic component creation
     - Review the [Components Guide](../guide/components.md) for comprehensive examples
     - Study the existing component examples in `app/code/local/Maco/Openwire/Model/Component/`

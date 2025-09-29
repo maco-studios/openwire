@@ -4,7 +4,7 @@
     This documentation page is currently being written. Please check back soon for a detailed walkthrough of the User Profile component example.
 
     In the meantime, you can:
-    
+
     - Explore the UserProfile component code in `app/code/local/Maco/Openwire/Model/Component/UserProfile.php`
     - Review form handling and validation patterns
     - Check the integration with Magento's customer system

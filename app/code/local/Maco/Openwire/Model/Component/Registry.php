@@ -21,12 +21,12 @@ class Maco_Openwire_Model_Component_Registry
      */
     protected function getStore()
     {
-        return Mage::getModel('openwire/sessionStore');
+        return Mage::helper('openwire/sessionStore');
     }
 
     public function registerComponent($component)
     {
-        /** @var Maco_Openwire_Model_SessionStore $store */
+        /** @var Maco_Openwire_Helper_SessionStore $store */
         $store = $this->getStore();
         $id = $component->getId() ?: uniqid('openwire_');
         $state = $component->getState();
@@ -45,7 +45,7 @@ class Maco_Openwire_Model_Component_Registry
 
     public function saveStateById($id, array $state)
     {
-        /** @var Maco_Openwire_Model_SessionStore $store */
+        /** @var Maco_Openwire_Helper_SessionStore $store */
         $store = $this->getStore();
         $entry = $store->load($id);
         if (!$entry) {

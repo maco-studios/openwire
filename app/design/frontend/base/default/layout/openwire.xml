@@ -4,9 +4,8 @@
     <default>
         <reference name="head">
             <!-- expects skin path: skin/frontend/<package>/<theme>/openwire/js/openwire.js -->
-            <action method="addItem">
-                <type>skin_js</type>
-                <name>openwire/js/openwire.js</name>
+            <action method="addJs">
+                <name>openwire/dist/openwire.js</name>
             </action>
         </reference>
     </default>

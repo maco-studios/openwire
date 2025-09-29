@@ -1,3 +1,4 @@
+app/etc/modules/Maco_Openwire.xml                                               app/etc/modules/Maco_Openwire.xml
 app/code/local/Maco/Openwire                                                    app/code/local/Maco/Openwire
 app/design/adminhtml/default/default/layout/openwire.xml                        app/design/adminhtml/default/default/layout/openwire.xml
 app/design/frontend/base/default/template/openwire                              app/design/frontend/base/default/template/openwire

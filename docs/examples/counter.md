@@ -4,7 +4,7 @@
     This documentation page is currently being written. Please check back soon for a detailed walkthrough of the Counter component example.
 
     In the meantime, you can:
-    
+
     - Review the [Quick Start Guide](../getting-started/quick-start.md) which includes a counter example
     - Explore the Counter component code in `app/code/local/Maco/Openwire/Model/Component/Counter.php`
     - Check the counter template in `app/design/frontend/base/default/template/openwire/counter.phtml`
