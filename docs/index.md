@@ -1,6 +1,6 @@
 # OpenWire
 
-![OpenWire Logo](.github/assets/img/logo.svg){ width="200" }
+![OpenWire Logo](assets/logo.svg){ width="200" }
 
 **OpenWire** is a Magento 1 module that introduces a modern component-based architecture to the Magento ecosystem. It enables developers to create dynamic, interactive, and reusable components with minimal JavaScript knowledge.
 
