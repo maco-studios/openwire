@@ -21,21 +21,21 @@ class Demo_Shopping_Model_Component_ProductCard extends Maco_Openwire_Model_Comp
         $this->loadProduct($params['product_id'] ?? null);
         return $this;
     }
-    
+
     public function addToCart($quantity = 1)
     {
         // Server-side logic
         $product = $this->getProduct();
         $cart = Mage::getSingleton('checkout/cart');
         $cart->addProduct($product, $quantity);
-        
+
         return [
             'effects' => [
                 ['type' => 'notify', 'data' => ['message' => 'Added to cart!']]
             ]
         ];
     }
-    
+
     private function loadProduct($productId)
     {
         if ($productId) {
@@ -43,7 +43,7 @@ class Demo_Shopping_Model_Component_ProductCard extends Maco_Openwire_Model_Comp
             $this->setData('product', $product->getData());
         }
     }
-    
+
     public function getTemplate()
     {
         return 'demo/shopping/product_card.phtml';
@@ -58,11 +58,11 @@ class Demo_Shopping_Model_Component_ProductCard extends Maco_Openwire_Model_Comp
     <div class="product-image">
         <img src="<?php echo $product['image'] ?>" alt="<?php echo $product['name'] ?>" />
     </div>
-    
+
     <div class="product-info">
         <h3><?php echo htmlspecialchars($product['name']) ?></h3>
         <p class="price">$<?php echo number_format($product['price'], 2) ?></p>
-        
+
         <div class="quantity-selector">
             <input #model="quantity" type="number" value="1" min="1" />
             <button @click="addToCart" data-openwire-params="[quantity]">
@@ -70,7 +70,7 @@ class Demo_Shopping_Model_Component_ProductCard extends Maco_Openwire_Model_Comp
             </button>
         </div>
     </div>
-    
+
     <div #loading style="display: none;">Adding...</div>
 </div>
 ```
@@ -96,16 +96,16 @@ The `mount()` method is called once when the component is first created:
 public function mount($params = [])
 {
     parent::mount($params);
-    
+
     // Initialize component state
     $this->setData('initialized_at', time());
     $this->setData('user_id', $this->getCurrentUserId());
-    
+
     // Process mount parameters
     if (isset($params['product_id'])) {
         $this->loadProduct($params['product_id']);
     }
-    
+
     return $this;
 }
 ```
@@ -139,10 +139,10 @@ public function handleUserAction($param1, $param2)
     // Update component state
     $this->setData('last_action', 'handleUserAction');
     $this->setData('action_params', [$param1, $param2]);
-    
+
     // Perform business logic
     $result = $this->performSomeOperation($param1, $param2);
-    
+
     // Return effects (optional)
     return [
         'effects' => [
@@ -184,7 +184,7 @@ public function incrementCounter()
 {
     $current = (int) $this->getData('counter') + 1;
     $this->setData('counter', $current);
-    
+
     // State is automatically saved and restored on next request
 }
 ```
@@ -197,16 +197,16 @@ Implement validation in your components:
 public function updateProfile($profileData)
 {
     $errors = $this->validateProfileData($profileData);
-    
+
     if (!empty($errors)) {
         $this->setData('validation_errors', $errors);
         return;
     }
-    
+
     // Save valid data
     $this->setData('profile', $profileData);
     $this->setData('validation_errors', []);
-    
+
     return [
         'effects' => [
             ['type' => 'notify', 'data' => ['message' => 'Profile updated!']]
@@ -217,15 +217,15 @@ public function updateProfile($profileData)
 private function validateProfileData($data)
 {
     $errors = [];
-    
+
     if (empty($data['name'])) {
         $errors['name'] = 'Name is required';
     }
-    
+
     if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
         $errors['email'] = 'Valid email is required';
     }
-    
+
     return $errors;
 }
 ```
@@ -240,7 +240,7 @@ Pass data from parent to child components:
 // Parent component template
 <div ow>
     <h2>Order Summary</h2>
-    
+
     <?php $orderItems = $this->getData('order_items'); ?>
     <?php foreach ($orderItems as $item): ?>
         <?php
@@ -267,7 +267,7 @@ public function removeItem($itemId)
 {
     // Remove item logic
     $this->removeItemFromOrder($itemId);
-    
+
     // Broadcast event to update other components
     return [
         'effects' => [
@@ -294,26 +294,26 @@ Separate data access from component logic:
 class Demo_Shopping_Model_Component_ProductList extends Maco_Openwire_Model_Component
 {
     private $productRepository;
-    
+
     public function __construct()
     {
         parent::__construct();
         $this->productRepository = Mage::getModel('demo_shopping/repository_product');
     }
-    
+
     public function mount($params = [])
     {
         parent::mount($params);
         $this->loadProducts($params);
         return $this;
     }
-    
+
     private function loadProducts($filters = [])
     {
         $products = $this->productRepository->findByFilters($filters);
         $this->setData('products', $products);
     }
-    
+
     public function updateFilters($filters)
     {
         $this->setData('filters', $filters);
@@ -332,19 +332,19 @@ public function processCheckout($orderData)
     try {
         $checkoutService = Mage::getModel('demo_shopping/service_checkout');
         $order = $checkoutService->processOrder($orderData);
-        
+
         $this->setData('order', $order);
         $this->setData('checkout_complete', true);
-        
+
         return [
             'effects' => [
                 ['type' => 'redirect', 'data' => ['url' => '/checkout/success']]
             ]
         ];
-        
+
     } catch (Exception $e) {
         $this->setData('checkout_error', $e->getMessage());
-        
+
         return [
             'effects' => [
                 ['type' => 'notify', 'data' => [
@@ -374,7 +374,7 @@ public function addItem($item)
     $items = $this->getData('items');
     $items[] = $item;
     $this->setData('items', $items);
-    
+
     // Update computed properties
     $this->updateComputedProperties();
 }
@@ -382,15 +382,15 @@ public function addItem($item)
 private function updateComputedProperties()
 {
     $items = $this->getData('items');
-    
+
     // Calculate totals
     $total = array_sum(array_column($items, 'price'));
     $this->setData('total', $total);
-    
+
     // Calculate tax
     $tax = $total * 0.08;
     $this->setData('tax', $tax);
-    
+
     // Calculate grand total
     $this->setData('grand_total', $total + $tax);
 }
@@ -409,18 +409,18 @@ class ProductCardComponentTest extends PHPUnit\Framework\TestCase
     {
         $component = new Demo_Shopping_Model_Component_ProductCard();
         $component->mount(['product_id' => 123]);
-        
+
         $this->assertNotNull($component->getData('product'));
         $this->assertEquals(123, $component->getData('product')['entity_id']);
     }
-    
+
     public function testAddToCartUpdatesQuantity()
     {
         $component = new Demo_Shopping_Model_Component_ProductCard();
         $component->mount(['product_id' => 123]);
-        
+
         $result = $component->addToCart(2);
-        
+
         $this->assertArrayHasKey('effects', $result);
         $this->assertEquals('notify', $result['effects'][0]['type']);
     }
@@ -438,9 +438,9 @@ public function testComponentRendersCorrectly()
     $component = $factory->make('demo_shopping/component_productCard', [
         'product_id' => 123
     ]);
-    
+
     $html = $component->render();
-    
+
     $this->assertStringContains('product-card', $html);
     $this->assertStringContains('data-openwire-component', $html);
 }
@@ -492,7 +492,7 @@ public function processPayment($paymentData)
         $this->setData('payment_result', $result);
     } catch (PaymentException $e) {
         $this->setData('payment_error', $e->getMessage());
-        
+
         return [
             'effects' => [
                 ['type' => 'notify', 'data' => [
@@ -514,11 +514,11 @@ public function updateProfile($profileData)
 {
     // Validate input
     $profileData = $this->sanitizeProfileData($profileData);
-    
+
     if (!$this->validateProfileData($profileData)) {
         return $this->handleValidationError();
     }
-    
+
     // Process safe data
     $this->saveProfile($profileData);
 }

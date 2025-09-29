@@ -205,21 +205,21 @@ Available options:
 
 !!! warning "Module Not Appearing"
     If the module doesn't appear in the admin module list:
-    
+
     - Check file permissions (755 for directories, 644 for files)
     - Verify the `app/etc/modules/Maco_Openwire.xml` file exists
     - Clear cache and refresh the page
 
 !!! error "JavaScript Errors"
     If you see JavaScript console errors:
-    
+
     - Ensure the OpenWire JS file is loading correctly
     - Check for JavaScript conflicts with other modules
     - Verify the correct file path in your layout XML
 
 !!! info "Components Not Updating"
     If components aren't responding to interactions:
-    
+
     - Check browser console for AJAX errors
     - Verify Magento's form key validation
     - Ensure component templates have proper `ow` attributes

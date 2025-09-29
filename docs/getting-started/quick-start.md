@@ -19,15 +19,15 @@ class Demo_Openwire_Model_Component_Counter extends Maco_Openwire_Model_Componen
     public function mount($params = [])
     {
         parent::mount($params);
-        
+
         // Set initial count from params or default to 0
         $initialCount = isset($params['initial_count']) ? (int)$params['initial_count'] : 0;
         $this->setData('count', $initialCount);
-        
+
         // Set component name
         $name = isset($params['name']) ? $params['name'] : 'Counter';
         $this->setData('name', $name);
-        
+
         return $this;
     }
 
@@ -38,7 +38,7 @@ class Demo_Openwire_Model_Component_Counter extends Maco_Openwire_Model_Componen
     {
         $currentCount = (int) $this->getData('count');
         $this->setData('count', $currentCount + 1);
-        
+
         return $this;
     }
 
@@ -49,7 +49,7 @@ class Demo_Openwire_Model_Component_Counter extends Maco_Openwire_Model_Componen
     {
         $currentCount = (int) $this->getData('count');
         $this->setData('count', max(0, $currentCount - 1)); // Don't go below 0
-        
+
         return $this;
     }
 
@@ -59,7 +59,7 @@ class Demo_Openwire_Model_Component_Counter extends Maco_Openwire_Model_Componen
     public function reset()
     {
         $this->setData('count', 0);
-        
+
         // Return an effect to show a notification
         return [
             'effects' => [
@@ -95,21 +95,21 @@ Create the template file that will render your component:
             <span class="count-value"><?php echo (int) $this->getData('count') ?></span>
         </div>
     </div>
-    
+
     <div class="counter-controls">
         <button @click="decrement" class="btn btn-decrement">
             - Decrease
         </button>
-        
+
         <button @click="increment" class="btn btn-increment">
             + Increase
         </button>
-        
+
         <button @click="reset" class="btn btn-reset">
             🔄 Reset
         </button>
     </div>
-    
+
     <div #loading class="loading-indicator" style="display: none;">
         <span>Updating...</span>
     </div>
@@ -236,14 +236,14 @@ Create the module configuration:
             <version>1.0.0</version>
         </Demo_Openwire>
     </modules>
-    
+
     <global>
         <models>
             <demo_openwire>
                 <class>Demo_Openwire_Model</class>
             </demo_openwire>
         </models>
-        
+
         <blocks>
             <demo_openwire>
                 <class>Demo_Openwire_Block</class>
@@ -269,14 +269,14 @@ class Demo_Openwire_Block_Counter extends Mage_Core_Block_Template
     {
         // Create component factory
         $factory = Mage::getModel('openwire/component_factory');
-        
+
         // Create the counter component
         $component = $factory->make('demo_openwire/component_counter', $params);
-        
+
         // Render the component
         return $component->render();
     }
-    
+
     /**
      * Get default parameters for the counter
      */

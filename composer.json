@@ -1,5 +1,7 @@
 {
     "name": "maco-studios/openwire",
+    "description": "A Magento 1 module for building reactive components.",
+    "license": "MIT",
     "type": "magento-module",
     "require-dev": {
         "ergebnis/composer-normalize": "^2.48",
@@ -39,7 +41,7 @@
             "@rector:fix",
             "php-cs-fixer fix"
         ],
-        "rector:test": "vendor/bin/rector process --config .rector.php --dry-run",
-        "rector:fix": "vendor/bin/rector process --config .rector.php"
+        "rector:fix": "vendor/bin/rector process --config .rector.php",
+        "rector:test": "vendor/bin/rector process --config .rector.php --dry-run"
     }
 }

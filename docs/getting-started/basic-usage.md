@@ -32,14 +32,14 @@ class Your_Component extends Maco_Openwire_Model_Component
     public function mount($params = [])
     {
         parent::mount($params);
-        
+
         // Initialize state
         $this->setData('initialized_at', time());
         $this->setData('user_id', Mage::getSingleton('customer/session')->getCustomerId());
-        
+
         return $this;
     }
-    
+
     /**
      * Called before each render
      * Use this for dynamic data that should update on every render
@@ -48,7 +48,7 @@ class Your_Component extends Maco_Openwire_Model_Component
     {
         $this->setData('current_time', date('Y-m-d H:i:s'));
     }
-    
+
     /**
      * Called after each render
      * Use this for cleanup or logging
@@ -91,23 +91,23 @@ OpenWire supports various data types:
 public function mount($params = [])
 {
     parent::mount($params);
-    
+
     // Strings
     $this->setData('message', 'Hello World');
-    
+
     // Numbers
     $this->setData('count', 42);
     $this->setData('price', 19.99);
-    
+
     // Booleans
     $this->setData('is_active', true);
-    
+
     // Arrays
     $this->setData('items', ['apple', 'banana', 'orange']);
-    
+
     // Objects (will be serialized)
     $this->setData('user', Mage::getSingleton('customer/session')->getCustomer());
-    
+
     return $this;
 }
 ```
@@ -126,20 +126,20 @@ OpenWire provides several directive types for different interactions:
         <input type="text" name="message" />
         <button type="submit">Submit</button>
     </form>
-    
+
     <!-- Data Binding -->
     <input #model="search_query" type="text" placeholder="Search..." />
     <textarea #model="description.lazy" rows="4"></textarea>
-    
+
     <!-- Property Binding -->
     <input :value="$this->getData('current_value')" type="text" />
     <div :class="$this->getData('css_class')">Dynamic Content</div>
-    
+
     <!-- Conditional Rendering -->
     <?php if ($this->getData('show_message')): ?>
         <div class="message"><?php echo $this->getData('message') ?></div>
     <?php endif; ?>
-    
+
     <!-- Loading States -->
     <div #loading style="display: none;">
         <span>Processing...</span>
@@ -166,7 +166,7 @@ OpenWire provides several directive types for different interactions:
             </li>
         <?php endforeach; ?>
     </ul>
-    
+
     <?php if (empty($products)): ?>
         <p class="empty-state">No products found.</p>
     <?php endif; ?>
@@ -178,7 +178,7 @@ OpenWire provides several directive types for different interactions:
 ```html
 <div ow>
     <h2>Shopping Cart</h2>
-    
+
     <?php $cartItems = $this->getData('cart_items') ?: []; ?>
     <?php foreach ($cartItems as $item): ?>
         <!-- Each item could be its own component -->
@@ -191,7 +191,7 @@ OpenWire provides several directive types for different interactions:
             ?>
         </div>
     <?php endforeach; ?>
-    
+
     <div class="cart-total">
         Total: $<?php echo number_format($this->getData('total'), 2) ?>
     </div>
@@ -213,7 +213,7 @@ class Demo_EventHandling extends Maco_Openwire_Model_Component
         $this->setData('click_count', $count);
         $this->setData('last_clicked', date('H:i:s'));
     }
-    
+
     // Handle form submissions
     public function handleSubmit($formData)
     {
@@ -222,11 +222,11 @@ class Demo_EventHandling extends Maco_Openwire_Model_Component
             $this->setData('error', 'Name is required');
             return;
         }
-        
+
         // Process submission
         $this->setData('submitted_name', $formData['name']);
         $this->setData('error', null);
-        
+
         // Return success effect
         return [
             'effects' => [
@@ -237,17 +237,17 @@ class Demo_EventHandling extends Maco_Openwire_Model_Component
             ]
         ];
     }
-    
+
     // Handle input changes
     public function updateSearch($query)
     {
         $this->setData('search_query', $query);
-        
+
         // Perform search
         $results = $this->performSearch($query);
         $this->setData('search_results', $results);
     }
-    
+
     private function performSearch($query)
     {
         // Implement your search logic
@@ -266,14 +266,14 @@ Pass parameters to your event handlers:
     <button @click="addToCart" data-openwire-params='[123, 1, "large"]'>
         Add Large Size to Cart
     </button>
-    
+
     <!-- Dynamic parameters from PHP -->
     <?php $productId = $this->getData('product_id'); ?>
     <?php $quantity = $this->getData('quantity'); ?>
     <button @click="addToCart" data-openwire-params='[<?php echo $productId ?>, <?php echo $quantity ?>]'>
         Add to Cart
     </button>
-    
+
     <!-- Form-based parameters -->
     <form @submit="processOrder">
         <input type="hidden" name="product_id" value="<?php echo $productId ?>" />
@@ -298,30 +298,30 @@ Automatically synchronize form inputs with component state:
 <div ow>
     <!-- Immediate updates (on input) -->
     <input #model="first_name" type="text" placeholder="First Name" />
-    
+
     <!-- Lazy updates (on blur/change) -->
     <textarea #model="description.lazy" placeholder="Description"></textarea>
-    
+
     <!-- Checkboxes -->
     <label>
         <input #model="agree_terms" type="checkbox" />
         I agree to the terms
     </label>
-    
+
     <!-- Radio buttons -->
     <input #model="size" type="radio" value="small" id="size_small" />
     <label for="size_small">Small</label>
-    
+
     <input #model="size" type="radio" value="large" id="size_large" />
     <label for="size_large">Large</label>
-    
+
     <!-- Select dropdowns -->
     <select #model="category">
         <option value="">Select Category</option>
         <option value="electronics">Electronics</option>
         <option value="clothing">Clothing</option>
     </select>
-    
+
     <!-- Display current values -->
     <div class="debug-info">
         <h4>Current State:</h4>
@@ -340,7 +340,7 @@ Automatically synchronize form inputs with component state:
 public function mount($params = [])
 {
     parent::mount($params);
-    
+
     // Set default values for form
     $this->setData([
         'first_name' => '',
@@ -349,7 +349,7 @@ public function mount($params = [])
         'size' => 'medium',
         'category' => ''
     ]);
-    
+
     return $this;
 }
 
@@ -360,7 +360,7 @@ public function updated($property, $value)
     if ($property === 'category') {
         $this->loadSubcategories($value);
     }
-    
+
     if ($property === 'first_name') {
         // Validate name
         if (strlen($value) < 2) {
@@ -375,13 +375,13 @@ private function loadSubcategories($category)
 {
     // Load relevant subcategories
     $subcategories = [];
-    
+
     if ($category === 'electronics') {
         $subcategories = ['phones', 'laptops', 'tablets'];
     } elseif ($category === 'clothing') {
         $subcategories = ['shirts', 'pants', 'shoes'];
     }
-    
+
     $this->setData('subcategories', $subcategories);
 }
 ```
@@ -394,25 +394,25 @@ private function loadSubcategories($category)
 public function validateAndSave($formData)
 {
     $errors = [];
-    
+
     // Validate required fields
     if (empty($formData['email'])) {
         $errors['email'] = 'Email is required';
     } elseif (!filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
         $errors['email'] = 'Invalid email format';
     }
-    
+
     if (empty($formData['password']) || strlen($formData['password']) < 6) {
         $errors['password'] = 'Password must be at least 6 characters';
     }
-    
+
     // Set errors
     $this->setData('errors', $errors);
-    
+
     if (!empty($errors)) {
         return; // Don't proceed if there are errors
     }
-    
+
     // Save data
     try {
         $this->saveUserData($formData);
@@ -438,7 +438,7 @@ Display errors in template:
                 <div class="error"><?php echo htmlspecialchars($errors['email']) ?></div>
             <?php endif; ?>
         </div>
-        
+
         <!-- Password field -->
         <div class="form-group">
             <label>Password:</label>
@@ -447,17 +447,17 @@ Display errors in template:
                 <div class="error"><?php echo htmlspecialchars($errors['password']) ?></div>
             <?php endif; ?>
         </div>
-        
+
         <!-- General errors -->
         <?php if (isset($errors['general'])): ?>
             <div class="alert alert-error"><?php echo htmlspecialchars($errors['general']) ?></div>
         <?php endif; ?>
-        
+
         <!-- Success message -->
         <?php if ($this->getData('success_message')): ?>
             <div class="alert alert-success"><?php echo htmlspecialchars($this->getData('success_message')) ?></div>
         <?php endif; ?>
-        
+
         <button type="submit">Save User</button>
     </form>
 </div>

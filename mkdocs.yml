@@ -8,87 +8,87 @@ repo_url: https://github.com/maco-studios/openwire
 edit_uri: edit/main/docs/
 
 theme:
-  name: material
-  palette:
-    - scheme: default
-      primary: blue
-      accent: blue
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    - scheme: slate
-      primary: blue
-      accent: blue
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
-  features:
-    - navigation.tabs
-    - navigation.sections
-    - navigation.expand
-    - navigation.top
-    - search.highlight
-    - search.share
-    - content.code.copy
-    - content.action.edit
-    - content.action.view
-  icon:
-    repo: fontawesome/brands/github
+    name: material
+    palette:
+        - scheme: default
+          primary: blue
+          accent: blue
+          toggle:
+              icon: material/brightness-7
+              name: Switch to dark mode
+        - scheme: slate
+          primary: blue
+          accent: blue
+          toggle:
+              icon: material/brightness-4
+              name: Switch to light mode
+    features:
+        - navigation.tabs
+        - navigation.sections
+        - navigation.expand
+        - navigation.top
+        - search.highlight
+        - search.share
+        - content.code.copy
+        - content.action.edit
+        - content.action.view
+    icon:
+        repo: fontawesome/brands/github
 
 plugins:
-  - search
-  - awesome-pages
+    - search
+    - awesome-pages
 
 markdown_extensions:
-  - admonition
-  - pymdownx.details
-  - pymdownx.superfences
-  - pymdownx.highlight:
-      anchor_linenums: true
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
-  - pymdownx.tabbed:
-      alternate_style: true
-  - attr_list
-  - md_in_html
-  - toc:
-      permalink: true
+    - admonition
+    - pymdownx.details
+    - pymdownx.superfences
+    - pymdownx.highlight:
+          anchor_linenums: true
+    - pymdownx.inlinehilite
+    - pymdownx.snippets
+    - pymdownx.tabbed:
+          alternate_style: true
+    - attr_list
+    - md_in_html
+    - toc:
+          permalink: true
 
 nav:
-  - Home: index.md
-  - Getting Started:
-    - Installation: getting-started/installation.md
-    - Quick Start: getting-started/quick-start.md
-    - Basic Usage: getting-started/basic-usage.md
-  - Guide:
-    - Components: guide/components.md
-    - Templates: guide/templates.md
-    - Events: guide/events.md
-    - Data Binding: guide/data-binding.md
-    - Drag & Drop: guide/drag-drop.md
-    - Effects: guide/effects.md
-  - Developer Guide:
-    - Architecture: developer/architecture.md
-    - Creating Components: developer/creating-components.md
-    - Template System: developer/template-system.md
-    - JavaScript API: developer/javascript-api.md
-    - Extending OpenWire: developer/extending.md
-    - Testing: developer/testing.md
-  - Examples:
-    - Counter: examples/counter.md
-    - Todo List: examples/todo-list.md
-    - Kanban Board: examples/kanban-board.md
-    - User Profile: examples/user-profile.md
-  - API Reference:
-    - PHP Classes: api/php-classes.md
-    - JavaScript API: api/javascript-api.md
-    - Template Directives: api/template-directives.md
-  - Contributing: contributing.md
-  - Changelog: changelog.md
+    - Home: index.md
+    - Getting Started:
+          - Installation: getting-started/installation.md
+          - Quick Start: getting-started/quick-start.md
+          - Basic Usage: getting-started/basic-usage.md
+    - Guide:
+          - Components: guide/components.md
+          - Templates: guide/templates.md
+          - Events: guide/events.md
+          - Data Binding: guide/data-binding.md
+          - Drag & Drop: guide/drag-drop.md
+          - Effects: guide/effects.md
+    - Developer Guide:
+          - Architecture: developer/architecture.md
+          - Creating Components: developer/creating-components.md
+          - Template System: developer/template-system.md
+          - JavaScript API: developer/javascript-api.md
+          - Extending OpenWire: developer/extending.md
+          - Testing: developer/testing.md
+    - Examples:
+          - Counter: examples/counter.md
+          - Todo List: examples/todo-list.md
+          - Kanban Board: examples/kanban-board.md
+          - User Profile: examples/user-profile.md
+    - API Reference:
+          - PHP Classes: api/php-classes.md
+          - JavaScript API: api/javascript-api.md
+          - Template Directives: api/template-directives.md
+    - Contributing: contributing.md
+    - Changelog: changelog.md
 
 extra:
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/maco-studios/openwire
-  version:
-    provider: mike
+    social:
+        - icon: fontawesome/brands/github
+          link: https://github.com/maco-studios/openwire
+    version:
+        provider: mike
